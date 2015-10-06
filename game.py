@@ -1,17 +1,10 @@
 import pygame
 from pygame.locals import *
 
+from gamelib.game import GameClass, GameState
+
 from level import *
 from asset import *
-
-class Controller(object):
-    def __init__(self):
-        self.area=[0,0]
-    def update(self,playerobj):
-        if playerobj.x>650:
-            self.area[0]+=1
-            print ("lel")
-        tiles.update()
 
 
 class Player(Entity):
@@ -62,68 +55,143 @@ class Player(Entity):
 
     def render(self, surf):
         screen_pos = (self.x % SCREEN_SIZE[0], self.y % SCREEN_SIZE[1])
-        pygame.draw.circle(screen, (200,5,50), (self.invpos,32), 32, 0)
+        pygame.draw.circle(surf, (200,5,50), (self.invpos,32), 32, 0)
         self.animator.render(surf, screen_pos)
 
 
-SCREEN_SIZE = (660,450)
-DESIRED_FPS = 32
+# This should be removed and placed as an RpgGame Constant eventually
+# We only need it now to have access to it in the Player class.
+SCREEN_SIZE = (660, 450)
 
-pygame.init()
-screen = pygame.display.set_mode(SCREEN_SIZE)
-tiles = pygame.sprite.Group()
-clock = pygame.time.Clock()
+class RpgGame(GameClass):
 
-# load game assets
-player_anim = AnimationSet("player_14.png", (16, 24))
-player_anim.addAnim("walk_down", 0, 3)
-player_anim.addAnim("walk_right", 4, 7)
-player_anim.addAnim("walk_left", 8, 11)
-player_anim.addAnim("walk_up", 12, 15)
+    def __init__(self):
+        GameClass.__init__(self)
 
-world_tiles = TileSet("sands.png", (25, 25))
-world = Level(SCREEN_SIZE, "r00.png", world_tiles)
+        # Global Constants
+        self.SCREEN_SIZE = SCREEN_SIZE
+        self.DESIRED_FPS = 32
 
-go=True
-p=Player(64,64, player_anim)
-c=Controller()
+        # Itemize Global GameClass variables for reference
+        # Anything here can be accessed in a GameState by self.gc.****
+        self.screen = None
+        self.clock = None
+        self.time = 0
+        self.time_step = 0.0
+
+    def initialize(self):
+        GameClass.initialize(self)
+
+        # Init pygame
+        pygame.init()
+        self.screen = pygame.display.set_mode(self.SCREEN_SIZE)
+        self.clock = pygame.time.Clock()
+
+    def update(self):
+        # Must be done before GameClass.update() so it can
+        # be used by GameState this frame
+        self.clock.tick(self.DESIRED_FPS)
+        self.time = pygame.time.get_ticks()
+        self.time_step = self.clock.get_rawtime()/1000.0
+
+        GameClass.update(self)
+
+    def shutdown(self):
+        GameClass.shutdown(self)
+        pygame.quit()
+
+    def quit(self):
+        # tell systems to shut down
+        self.running = False
+
+# end RpgGame
 
 
-while go:
-    pygame.display.set_caption(str(clock.get_fps()))
+class TestState(GameState):
 
-    # updates
-    clock.tick(DESIRED_FPS)
-    dt = clock.get_time()/1000.0
-    #c.update(p)
-    #screen.blit(limages,(0,0))
-    p.update(dt)
+    def __init__(self):
+        GameState.__init__(self)
 
-    # Keep player from leaving game world
-    # This should eventually be moved into Player
-    if p.x < 0:
-        p.x = 1
-    elif p.x >= world.size[0]:
-        p.x = world.size[0] - 1
-    if p.y < 0:
-        p.y = 1
-    elif p.y >= world.size[1]:
-        p.y = world.size[1] - 1
+        # For reference, actually set during initialize()
+        self.player_anim = None
+        self.world_tiles = None
+        self.world = None
 
-    world.move((p.x, p.y))
-   
-    for e in pygame.event.get():
-        if e.type == QUIT:
-            go = False
+        self.player = None
 
-    # render
-    screen.fill((0,0,0))
-    world.render(screen)
-    p.render(screen)
-    pygame.display.flip()
+    def initialize(self):
+        """Called the first time the game is changed to this state
+           during the applications lifecycle."""
 
-#print tiles.sprites()
+        # Load State Assets
+        self.player_anim = AnimationSet("player_14.png", (16, 24))
+        self.player_anim.addAnim("walk_down", 0, 3)
+        self.player_anim.addAnim("walk_right", 4, 7)
+        self.player_anim.addAnim("walk_left", 8, 11)
+        self.player_anim.addAnim("walk_up", 12, 15)
 
-pygame.display.quit()
-quit()
+        self.world_tiles = TileSet("sands.png", (25, 25))
+        self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
+
+        self.player = Player(64, 64, self.player_anim)
+
+
+    def enter(self):
+        """Called every time the game is switched to this state."""
+        pass
+
+    def processInput(self):
+        """Called during normal update/render period for this state
+           to process it's input."""
+        # Just handle quit message for now.
+        for e in pygame.event.get():
+            if e.type == QUIT:
+                self.gc.quit()
+
+    def update(self):
+        """Called during normal update/render period for this state
+           to update it's local or game data."""
+        pygame.display.set_caption(str(self.gc.clock.get_fps()))
+
+        # Keep player from leaving game world
+        # This should eventually be moved into Player
+        p, w = self.player, self.world
+        p.update(self.gc.time_step)
+        if p.x < 0:
+            p.x = 1
+        elif p.x >= w.size[0]:
+            p.x = w.size[0] - 1
+        if p.y < 0:
+            p.y = 1
+        elif p.y >= w.size[1]:
+            p.y = w.size[1] - 1
+
+        w.move((p.x, p.y))
+
+    def render(self):
+        """Called during normal update/render period for this state
+           to render it's data in a specific way."""
+        self.gc.screen.fill((0,0,0))
+        self.world.render(self.gc.screen)
+        self.player.render(self.gc.screen)
+        pygame.display.flip()
+
+# end TestState
+
+
+if __name__ == "__main__":
     
+    # Initialize Game
+    game = RpgGame()
+    game.initialize()
+
+    # Start first state
+    game.changeState(TestState)
+
+    # Main Game Loop
+    while game.running:
+        game.update()
+
+    # Cleanup
+    game.shutdown()
+# end main
