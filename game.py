@@ -2,9 +2,8 @@ import pygame
 from pygame.locals import *
 
 from gamelib.game import GameClass, GameState
-
+from gamelib.asset import *
 from level import *
-from asset import *
 
 
 class Player(Entity):
