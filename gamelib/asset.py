@@ -1,6 +1,17 @@
+#!/usr/bin/env python
+"""
+asset.py : Basic Asset Management including Tilesets and Animations.
+
+TileSet - Handles image that is segmented into multiple tiles of the same size.
+AnimationSet - Extenstion of the TileSet that allows you to map sets of frames (tiles) to named animations.
+Animator - Driver for an AnimationSet. Multiple Animators can use the same AnimationSet.
+"""
+__author__ = "Andrew Peterson (DJKool14)"
+__copyright__ = "Copyright 2015, DJLib Project [https://bitbucket.org/djkool14/pyshipcommand]"
+__credits__ = []
+
 
 import pygame as pg
-
 
 
 class TileSet(object):
