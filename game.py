@@ -15,24 +15,24 @@ class Player(Entity):
         self.money = 0
         self.hp = 25
         self.maxhp = 25
-        self.invpos=1
+        self.invpos = -665
 
         self.animator = Animator(anim_set, Animator.MODE_LOOP, 15.0)
 
     def inventory(self):
         #*Slide* into the DMs
-        if self.invpos < 300:
-            self.invpos+=4
+        if self.invpos < 20:
+            self.invpos+=35
 
     def update(self, dt):
 
-        k=pygame.key.get_pressed()
+        k = pygame.key.get_pressed()
         
         #Inventory Key
         if k[K_i]:
             self.inventory()
-        elif self.invpos>-90:
-            self.invpos-=5
+        elif self.invpos>-665:
+            self.invpos-=50
         
         # Only update player anim with actual movement
         if k[K_w]:
@@ -54,7 +54,11 @@ class Player(Entity):
 
     def render(self, surf):
         screen_pos = (self.x % SCREEN_SIZE[0], self.y % SCREEN_SIZE[1])
-        pygame.draw.circle(surf, (200,5,50), (self.invpos,32), 32, 0)
+        #inventory box:
+        pygame.draw.rect(surf, (200,150,150), (30,self.invpos, 600, 400), 0)
+        pygame.draw.rect(surf, (  0,  0,  0), (180,self.invpos + 50, 100, 100), 0)
+        pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
+        pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
         self.animator.render(surf, screen_pos)
 
 
@@ -194,3 +198,4 @@ if __name__ == "__main__":
     # Cleanup
     game.shutdown()
 # end main
+
