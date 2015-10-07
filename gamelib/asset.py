@@ -105,14 +105,14 @@ class Animator(object):
             self.frame -= 1
             if self.frame == anim[0]:
                 self.mode = Animator.MODE_PING
-        else:
+        elif self.mode != Animator.MODE_STOPPED:
             self.frame += 1
-            if self.frame == anim[1]:
+            if self.frame >= anim[1]:
                 if self.mode == Animator.MODE_PLAYONCE:
                     self.mode = Animator.MODE_STOPPED
                 elif self.mode == Animator.MODE_PING:
                     self.mode = Animator.MODE_PONG
-                else: #MODE_LOOP || MODE_STOPPED
+                elif self.frame > anim[1]: #MODE_LOOP
                     self.frame = anim[0]
 
 
@@ -121,9 +121,9 @@ class Animator(object):
 
         if anim != self.anim:
             self.anim = anim
-            self.frame = self.anim[0]
             if mode >= 0:
                 self.mode = mode
+            self.frame = self.anim[1] if self.mode == Animator.MODE_PONG else self.anim[0]
             print "anim set %s" % str(anim)
 
 
