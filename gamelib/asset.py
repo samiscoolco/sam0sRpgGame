@@ -123,8 +123,11 @@ class Animator(object):
             self.anim = anim
             if mode >= 0:
                 self.mode = mode
+
             self.frame = self.anim[1] if self.mode == Animator.MODE_PONG else self.anim[0]
             print "anim set %s" % str(anim)
+
+
 
 
     def render(self, surf, pos):

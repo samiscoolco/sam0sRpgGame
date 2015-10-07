@@ -3,6 +3,7 @@ from pygame.locals import *
 
 from gamelib.game import GameClass, GameState
 from gamelib.asset import *
+from testnpc import testnpc
 from level import *
 
 
@@ -18,11 +19,6 @@ class Player(Entity):
         self.invpos = -665
 
         self.animator = Animator(anim_set, Animator.MODE_LOOP, 15.0)
-
-    def inventory(self):
-        #*Slide* into the DMs
-        if self.invpos < 20:
-            self.invpos+=35
 
     def update(self, dt):
 
@@ -132,11 +128,13 @@ class TestState(GameState):
         self.player_anim.addAnim("walk_right", 4, 7)
         self.player_anim.addAnim("walk_left", 8, 11)
         self.player_anim.addAnim("walk_up", 12, 15)
+        self.player_anim.addAnim("idle", 16, 19)#for npc right now
 
         self.world_tiles = TileSet("sands.png", (25, 25))
         self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
 
         self.player = Player(64, 64, self.player_anim)
+        self.test = testnpc(120,120, self.player_anim)
 
 
     def enter(self):
@@ -158,8 +156,9 @@ class TestState(GameState):
 
         # Keep player from leaving game world
         # This should eventually be moved into Player
-        p, w = self.player, self.world
+        p, w, t = self.player, self.world, self.test
         p.update(self.gc.time_step)
+        t.update(self.gc.time_step)
         if p.x < 0:
             p.x = 1
         elif p.x >= w.size[0]:
@@ -177,6 +176,7 @@ class TestState(GameState):
         self.gc.screen.fill((0,0,0))
         self.world.render(self.gc.screen)
         self.player.render(self.gc.screen)
+        self.test.render(self.gc.screen)
         pygame.display.flip()
 
 # end TestState
