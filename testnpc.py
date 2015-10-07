@@ -19,8 +19,8 @@ class testnpc(Entity):
     def __init__(self,x,y, anim_set):
         Entity.__init__(self, x, y)
         self.cond=0
-        self.animator = Animator(anim_set, Animator.MODE_LOOP, 55)
-        self.animator.setAnim("walk_down")
+        self.animator = Animator(anim_set, Animator.MODE_LOOP, 15)
+        self.animator.setAnim("idle")
     def update(self, dt):   
             self.animator.update(dt)
 

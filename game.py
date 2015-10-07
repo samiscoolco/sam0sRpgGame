@@ -21,7 +21,6 @@ class Player(Entity):
         self.animator = Animator(anim_set, Animator.MODE_LOOP, 15.0)
 
     def inventory(self):
-        #*Slide* into the DMs
         if self.invpos < 300:
             self.invpos+=4
 
@@ -129,6 +128,7 @@ class TestState(GameState):
         self.player_anim.addAnim("walk_right", 4, 7)
         self.player_anim.addAnim("walk_left", 8, 11)
         self.player_anim.addAnim("walk_up", 12, 15)
+        self.player_anim.addAnim("idle", 16, 19)#for npc right now
 
         self.world_tiles = TileSet("sands.png", (25, 25))
         self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)

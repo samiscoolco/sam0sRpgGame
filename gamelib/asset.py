@@ -124,7 +124,7 @@ class Animator(object):
             self.frame = self.anim[0]
             if mode >= 0:
                 self.mode = mode
-            print "anim set %s" % str(anim)
+            #print "anim set %s" % str(anim)
 
 
     def render(self, surf, pos):
