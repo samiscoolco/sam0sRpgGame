@@ -19,7 +19,10 @@ class Player(Entity):
         self.invpos = -665
 
         self.animator = Animator(anim_set, Animator.MODE_LOOP, 15.0)
-
+    def inventory(self):
+        #*Slide* into the DMs
+        if self.invpos < 20:
+            self.invpos+=35
     def update(self, dt):
 
         k = pygame.key.get_pressed()
