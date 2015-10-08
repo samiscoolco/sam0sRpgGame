@@ -1,14 +1,6 @@
 
 import pygame as pg
-
-
-class Entity(pg.sprite.Sprite):
-    def __init__(self, x, y):
-        pg.sprite.Sprite.__init__(self)
-        self.x = x
-        self.y = y
-
-# end Entity
+from gamelib.primitives import Entity
 
 
 class Tile (Entity):

@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 
 from gamelib.game import GameClass, GameState
+from gamelib.primitives import Point
 from gamelib.asset import *
 from testnpc import testnpc
 from level import *
@@ -11,18 +12,20 @@ class Player(Entity):
 
     WALK_SPEED = 3
 
-    def __init__(self,x,y, anim_set):
-        Entity.__init__(self, x, y)
+    def __init__(self, pos, anim_set):
+        Entity.__init__(self, pos)
         self.money = 0
         self.hp = 25
         self.maxhp = 25
         self.invpos = -665
 
         self.animator = Animator(anim_set, Animator.MODE_LOOP, 15.0)
+
     def inventory(self):
         #*Slide* into the DMs
         if self.invpos < 20:
             self.invpos+=35
+
     def update(self, dt):
 
         k = pygame.key.get_pressed()
@@ -35,35 +38,32 @@ class Player(Entity):
         
         # Only update player anim with actual movement
         if k[K_w]:
-            self.y -= Player.WALK_SPEED
+            self.pos.y -= Player.WALK_SPEED
             self.animator.setAnim("walk_up")
             self.animator.update(dt)
         elif k[K_s]:
-            self.y += Player.WALK_SPEED
+            self.pos.y += Player.WALK_SPEED
             self.animator.setAnim("walk_down")
             self.animator.update(dt)
         if k[K_a]:
-            self.x -= Player.WALK_SPEED
+            self.pos.x -= Player.WALK_SPEED
             self.animator.setAnim("walk_left")
             self.animator.update(dt)
         elif k[K_d]:
-            self.x += Player.WALK_SPEED
+            self.pos.x += Player.WALK_SPEED
             self.animator.setAnim("walk_right")
             self.animator.update(dt)
 
-    def render(self, surf):
-        screen_pos = (self.x % SCREEN_SIZE[0], self.y % SCREEN_SIZE[1])
+    def render(self, surf, offset = None):
+        screen_pos = self.pos + offset if offset else self.pos
         #inventory box:
         pygame.draw.rect(surf, (200,150,150), (30,self.invpos, 600, 400), 0)
         pygame.draw.rect(surf, (  0,  0,  0), (180,self.invpos + 50, 100, 100), 0)
         pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
         pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
-        self.animator.render(surf, screen_pos)
+        self.animator.render(surf, screen_pos.intArgs())
 
 
-# This should be removed and placed as an RpgGame Constant eventually
-# We only need it now to have access to it in the Player class.
-SCREEN_SIZE = (660, 450)
 
 class RpgGame(GameClass):
 
@@ -71,7 +71,7 @@ class RpgGame(GameClass):
         GameClass.__init__(self)
 
         # Global Constants
-        self.SCREEN_SIZE = SCREEN_SIZE
+        self.SCREEN_SIZE = (660, 450)
         self.DESIRED_FPS = 32
 
         # Itemize Global GameClass variables for reference
@@ -136,8 +136,8 @@ class TestState(GameState):
         self.world_tiles = TileSet("sands.png", (25, 25))
         self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
 
-        self.player = Player(64, 64, self.player_anim)
-        self.test = testnpc(120,120, self.player_anim)
+        self.player = Player(Point(64, 64), self.player_anim)
+        self.test = testnpc(Point(120, 120), self.player_anim)
 
 
     def enter(self):
@@ -162,24 +162,26 @@ class TestState(GameState):
         p, w, t = self.player, self.world, self.test
         p.update(self.gc.time_step)
         t.update(self.gc.time_step)
-        if p.x < 0:
-            p.x = 1
-        elif p.x >= w.size[0]:
-            p.x = w.size[0] - 1
-        if p.y < 0:
-            p.y = 1
-        elif p.y >= w.size[1]:
-            p.y = w.size[1] - 1
+        if p.pos.x < 0:
+            p.pos.x = 1
+        elif p.pos.x >= w.size[0]:
+            p.pos.x = w.size[0] - 1
+        if p.pos.y < 0:
+            p.pos.y = 1
+        elif p.pos.y >= w.size[1]:
+            p.pos.y = w.size[1] - 1
 
-        w.move((p.x, p.y))
+        w.move(p.pos.intArgs())
 
     def render(self):
         """Called during normal update/render period for this state
            to render it's data in a specific way."""
         self.gc.screen.fill((0,0,0))
         self.world.render(self.gc.screen)
-        self.player.render(self.gc.screen)
-        self.test.render(self.gc.screen)
+
+        offset = -Point(*self.world.areaPos)
+        self.player.render(self.gc.screen, offset)
+        self.test.render(self.gc.screen, offset)
         pygame.display.flip()
 
 # end TestState
