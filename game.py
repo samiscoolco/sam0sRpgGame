@@ -151,6 +151,10 @@ class TestState(GameState):
         for e in pygame.event.get():
             if e.type == QUIT:
                 self.gc.quit()
+            elif e.type == KEYUP:
+                if e.key == K_TAB:
+                    from editor import EditorState
+                    self.gc.changeState(EditorState, self.world)
 
     def update(self):
         """Called during normal update/render period for this state

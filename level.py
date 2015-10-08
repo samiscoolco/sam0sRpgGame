@@ -99,6 +99,30 @@ class Level(object):
         return True
 
 
+    def getTileAt(self, pos):
+        # Check for world boundaries
+        if pos[0] < 0 or pos[0] >= self.size[0] or \
+           pos[1] < 0 or pos[1] >= self.size[1]:
+           return None
+        return (int(pos[0]/Level.TILE_WIDTH), int(pos[1]/Level.TILE_HEIGHT))
+
+
+    def getTilePos(self, tile):
+        pos = (tile[0] * Level.TILE_WIDTH, tile[1] * Level.TILE_HEIGHT)
+        # Check for world boundaries
+        if pos[0] < 0 or pos[0] >= self.size[0] or \
+           pos[1] < 0 or pos[1] >= self.size[1]:
+           return None
+        return pos
+
+
+    def getTileRect(self, tile):
+        pos = self.getTilePos(tile)
+        if not pos:
+            return None
+        return pg.Rect(pos[0], pos[1], Level.TILE_WIDTH, Level.TILE_HEIGHT)
+
+
     def _generateArea(self, pos):
         """Generate a new area."""
         print "_generateArea(%s)" % str(pos)
