@@ -128,13 +128,20 @@ class Animator(object):
             print "anim set %s" % str(anim)
 
 
-
-
     def render(self, surf, pos):
         self.animset.render(surf, pos, self.frame)
 
 
     def finished(self):
         return self.mode == Animator.MODE_STOPPED
+
+    def setFrame(self, index):
+        """ Set current frame based on offset within the current Animation """
+        frame = self.anim[0] + index
+        if frame > self.anim[1]:
+            return False
+
+        self.frame = frame
+        return True
 
 #end Animator

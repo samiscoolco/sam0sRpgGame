@@ -171,6 +171,10 @@ class TestState(GameState):
         elif p.pos.y >= w.size[1]:
             p.pos.y = w.size[1] - 1
 
+        # Have NPC look at player if they get close
+        if t.vision.contains(p.pos):
+            t.lookAt(p.pos)
+
         w.move(p.pos.intArgs())
 
     def render(self):
