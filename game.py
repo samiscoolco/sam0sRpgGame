@@ -58,20 +58,22 @@ class Player(Entity):
         pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
         self.animator.render(surf, screen_pos.intArgs())
     def lookAt(self, pos):
-        # Idle frame index based on direction to target:
-        # <--X-->
-        #|  \3/
-        #Y 2 X 1
-        #|  /0\
-        #V
+        # Determine direction
         d =pos - self.pos
         frame = 0
         if d.x >= d.y:
             frame = 1 if d.x >= -d.y else 3
         else:
             frame = 0 if d.x >= -d.y else 2
-        self.animator.setFrame(frame)
-
+       #Determine which anim set to use.
+        if frame == 3:
+            self.animator.setAnim("walk_up")
+        if frame == 2:
+            self.animator.setAnim("walk_left")
+        if frame == 1:
+            self.animator.setAnim("walk_right")
+        if frame == 0:
+            self.animator.setAnim("walk_down")
 
 class RpgGame(GameClass):
 
