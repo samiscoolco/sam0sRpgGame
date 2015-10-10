@@ -11,6 +11,8 @@ import pygame as pg
 from pygame.locals import QUIT, KEYUP, KEYDOWN, K_TAB, K_LSHIFT, K_w, K_a, K_s, K_d
 
 from gamelib.game import GameState
+from gamelib.asset import TileSet
+from gamelib.primitives import Rect, Point
 
 
 class EditorState(GameState):
@@ -18,13 +20,21 @@ class EditorState(GameState):
     GRID_COLOR = pg.Color(128, 128, 128, 128)
     SELECT_COLOR = pg.Color(0, 255, 0, 128)
 
+    TS_COLOR = pg.Color(255, 0, 255)
+    TS_SEL_COLOR = pg.Color(0, 0, 255)
+    TS_SRATIO = 0.4
+
     def __init__(self):
         GameState.__init__(self)
 
         # For reference, actually set during initialize()
         self.level = None
         self.tileset = None
+        self.tsRect = None
+
+        # User Interaction
         self.selected = None
+        self.currTile = 0
 
     def initialize(self):
         """Called the first time the game is changed to this state
@@ -33,7 +43,19 @@ class EditorState(GameState):
     def enter(self, level):
         """Called every time the game is switched to this state."""
         self.level = level
-        self.tileset = level.tileset
+        if not self.tileset or level.tileset.filename != self.tileset.filename:
+            # Make a copy of the tileset so we can upscale it and use it
+            # as part of the Editor GUI.
+            ts = TileSet(level.tileset.filename, level.tileset.srcTileSize)
+            scale = (self.gc.SCREEN_SIZE[0]*EditorState.TS_SRATIO)/ts.image.get_width()
+            ts.resize((int(ts.tileSize[0]*scale), int(ts.tileSize[1]*scale)))
+            print ts.getScale()
+            self.tileset = ts
+
+            # Position tileset UI at top left of screen
+            self.tsRect = Rect.fromSides(self.gc.SCREEN_SIZE[0]-ts.image.get_width(), 0,
+                                         self.gc.SCREEN_SIZE[0], ts.image.get_height())
+            self.currTile = 0
 
         # Select upper left tile by default
         self.selected = self.level.getTileAt(self.level.areaPos)
@@ -92,6 +114,23 @@ class EditorState(GameState):
         selrect = self.level.getTileRect(self.selected)
         selrect.move_ip(-view_offset[0], -view_offset[1])
         pg.draw.rect(surf, EditorState.SELECT_COLOR, selrect, 1)
+
+        # Draw tileset UI
+        tsrect = pg.Rect(*self.tsRect.intArgs())
+        tsrect.inflate_ip(4, 4)
+        pg.draw.rect(surf, EditorState.TS_COLOR, tsrect)
+        surf.blit(self.tileset.image, self.tsRect.pos.intArgs())
+
+        x, y = self.tsRect.pos.intArgs()
+        while x <= self.tsRect.right:
+            pg.draw.line(surf, EditorState.GRID_COLOR, (x, self.tsRect.top), (x, self.tsRect.bottom))
+            x += self.tileset.tileSize[0]
+        while y <= self.tsRect.bottom:
+            pg.draw.line(surf, EditorState.GRID_COLOR, (self.tsRect.left, y), (self.tsRect.right, y))
+            y += self.tileset.tileSize[1]
+        tselrect = self.tileset.getTileRect(self.currTile)
+        tselrect.move_ip(*self.tsRect.pos.intArgs())
+        pg.draw.rect(surf, EditorState.TS_SEL_COLOR, tselrect, 1)
 
         pg.display.flip()
 

@@ -17,8 +17,8 @@ class Tile (Entity):
 
 class Level(object):
 
-    TILE_WIDTH = 25
-    TILE_HEIGHT = 25
+    TILE_WIDTH = 50
+    TILE_HEIGHT = 50
 
 
     def __init__(self, area_size, filename = None, tileset = None):
@@ -34,12 +34,10 @@ class Level(object):
         self.tileset = tileset
 
         if tileset:
-            # This feels wrong, but it is the only way to make sure the tiles are the right size
+            # pygame doesn't allow you to arbitrarily scale surfaces on blit,
+            # so we must prescale the tileset to the tile size we want.
             if tileset.tileSize[0] != Level.TILE_WIDTH or tileset.tileSize[1] != Level.TILE_HEIGHT:
-                newsize = (tileset.tileCounts[0] * Level.TILE_WIDTH, tileset.tileCounts[1] * Level.TILE_HEIGHT)
-                print "resizing tileset from %s to %s" %  (tileset.image.get_size(), newsize)
-                tileset.image = pg.transform.scale(tileset.image, newsize)
-                tileset.tileSize = (Level.TILE_WIDTH, Level.TILE_HEIGHT)
+                tileset.resize((Level.TILE_WIDTH, Level.TILE_HEIGHT))
 
         if filename:
             self.load(filename)
