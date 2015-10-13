@@ -81,13 +81,12 @@ class Level(object):
         Returns True when the move is to a new area.
         """
         # We don't have to do anything if the movement is still in the current area.
-        if pos[0] >= self.areaPos[0] and pos[0] < (self.areaPos[0] + self.areaSize[0]) and \
-           pos[1] >= self.areaPos[1] and pos[1] < (self.areaPos[1] + self.areaSize[1]):
-           return False
+        if self.inArea(pos):
+            return False
 
         # Check for world boundaries
-        if pos[0] < 0 or pos[0] >= self.size[0] or \
-           pos[1] < 0 or pos[1] >= self.size[1]:
+        if 0 > pos[0] >= self.size[0] or \
+           0 > pos[1] >= self.size[1]:
            return False
 
         # Calculate new area pos
@@ -95,6 +94,13 @@ class Level(object):
         self._generateArea((int(pos[0]/self.areaSize[0]) * self.areaSize[0],
                             int(pos[1]/self.areaSize[1]) * self.areaSize[1]))
         return True
+
+
+    def inArea(self, pos):
+        if self.areaPos[0] <= pos[0] < (self.areaPos[0] + self.areaSize[0]) and \
+           self.areaPos[1] <= pos[1] < (self.areaPos[1] + self.areaSize[1]):
+           return True
+        return False
 
 
     def getTileAt(self, pos):
@@ -121,6 +127,15 @@ class Level(object):
         return pg.Rect(pos[0], pos[1], Level.TILE_WIDTH, Level.TILE_HEIGHT)
 
 
+    def setTile(self, tile, ts_index):
+        # Tile visual is stored in R value
+        self._worldImg.set_at(tile, pg.Color(ts_index, 0, 0))
+
+        # redraw area with new tile if it is currently visible
+        if self.inArea(self.getTilePos(tile)):
+            self._generateArea(self.areaPos)
+
+
     def _generateArea(self, pos):
         """Generate a new area."""
         print "_generateArea(%s)" % str(pos)
@@ -144,6 +159,8 @@ class Level(object):
                         self.tileset.render(self._currArea, targetRect, 0)
                     elif px[0] == 0:
                         self.tileset.render(self._currArea, targetRect, 12)
+                    else:
+                        self.tileset.render(self._currArea, targetRect, px[0])
                 else:
                     if px[0]==185:
                         #t = Tile(i*16,j*16,(185,122,87))

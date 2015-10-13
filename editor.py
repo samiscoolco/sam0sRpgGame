@@ -8,7 +8,7 @@ __credits__ = []
 
 
 import pygame as pg
-from pygame.locals import QUIT, KEYUP, KEYDOWN, K_TAB, K_LSHIFT, K_w, K_a, K_s, K_d
+from pygame.locals import *
 
 from gamelib.game import GameState
 from gamelib.asset import TileSet
@@ -66,31 +66,36 @@ class EditorState(GameState):
         for e in pg.event.get():
             if e.type == QUIT:
                 self.gc.quit()
+            elif e.type == KEYDOWN:
+                self._handleKeydown(e.key)
             elif e.type == KEYUP:
                 if e.key == K_TAB:
                     from game import TestState
                     self.gc.changeState(TestState)
+            elif e.type == MOUSEBUTTONDOWN:
+                self._handleClick(e.button, e.pos)
 
+        # WASD Controls allows for faster movement.
+        # They are handled the same as arrow keys,
+        # but will be processed on every from instead of just once
+        # per keydown event.
         sel_x, sel_y = self.selected
         k = pg.key.get_pressed()
         if k[K_w]:
-            sel_y -= 1
+            self._handleKeydown(K_UP)
         elif k[K_s]:
-            sel_y += 1
+            self._handleKeydown(K_DOWN)
         if k[K_a]:
-            sel_x -= 1
+            self._handleKeydown(K_LEFT)
         elif k[K_d]:
-            sel_x += 1
-
-        pos = self.level.getTilePos((sel_x, sel_y))
-        if pos:
-            self.selected = (sel_x, sel_y)
-            self.level.move(pos)
+            self._handleKeydown(K_RIGHT)
 
 
     def update(self):
         """Called during normal update/render period for this state
            to update it's local or game data."""
+        # Not much to update in Editor State as almost everything
+        # is driven by user input.
 
     def render(self):
         """Called during normal update/render period for this state
@@ -139,6 +144,46 @@ class EditorState(GameState):
 
     def shutdown(self):
         """Called during application shutdown."""
+
+    def _handleClick(self, button, mpos):
+        mpos = Point(*mpos)
+
+        # Check for UI interaction first
+        if self.tsRect.contains(mpos):
+            # Determine tile index
+            # We could technically iterate through
+            # every tile in the tileset and use getTileRect,
+            # but it is so much simple to use based math, assuming 2d grid.
+            rpos = mpos - self.tsRect.pos
+            self.currTile = (int(rpos.y/self.tileset.tileSize[1]) * self.tileset.tileCounts[0]) + int(rpos.x/self.tileset.tileSize[0])
+            assert( self.tileset.getTileRect(self.currTile).collidepoint(rpos.intArgs()))
+        else:
+            # Always handle world clicking last
+            wpos = mpos + Point(*self.level.areaPos)
+            self.selected = (int(mpos.x/self.level.TILE_WIDTH), int(mpos.y/self.level.TILE_HEIGHT))
+
+    def _handleKeydown(self, key):
+
+        if key == K_SPACE:
+            self.level.setTile(self.selected, self.currTile)
+            print str(self.level.getTilePos(self.selected))
+
+        # Handle selection movement
+        if key in (K_UP, K_DOWN, K_LEFT, K_RIGHT):
+            sel_x, sel_y = self.selected
+            if key == K_UP:
+                sel_y -= 1
+            elif key == K_DOWN:
+                sel_y += 1
+            elif key == K_LEFT:
+                sel_x -= 1
+            elif key == K_RIGHT:
+                sel_x += 1
+
+            pos = self.level.getTilePos((sel_x, sel_y))
+            if pos:
+                self.selected = (sel_x, sel_y)
+                self.level.move(pos)
 
 #end EditorState
 
