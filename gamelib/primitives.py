@@ -156,7 +156,7 @@ class BoundingVolume(Entity):
 
 #end BoundingVolume
 
-class Rect(BoundingVolume):
+class Rectangle(BoundingVolume):
 
     # CLASS METHODS
     @classmethod

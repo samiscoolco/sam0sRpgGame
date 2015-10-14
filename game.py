@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 
 from gamelib.game import GameClass, GameState
-from gamelib.primitives import Point
+from gamelib.primitives import Point,Rectangle
 from gamelib.asset import *
 from testnpc import testnpc
 from level import *
@@ -118,7 +118,57 @@ class RpgGame(GameClass):
 
 # end RpgGame
 
+class MenuState(GameState):
 
+    def __init__(self):
+        GameState.__init__(self)
+
+        # For reference, actually set during initialize()
+        self.player_anim = None
+        self.world_tiles = None
+        self.world = None
+
+        self.player = None
+        self.button1= Rect((22,134,82,38))
+    def initialize(self):
+        """Called the first time the game is changed to this state
+           during the applications lifecycle."""
+        self.menuimg=pygame.image.load("menu.png")
+
+
+    def enter(self):
+        """Called every time the game is switched to this state."""
+        pass
+
+    def processInput(self):
+        mse=pygame.mouse.get_pos()
+        """Called during normal update/render period for this state
+           to process it's input."""
+        # Just handle quit message for now.
+        for e in pygame.event.get():
+            if e.type == QUIT:
+                self.gc.quit()
+            if e.type == MOUSEBUTTONUP:
+                if e.button == 1:
+                    if self.button1.contains(Rect(mse[0],mse[1],2,2)):
+                        game.changeState(TestState)
+
+    def update(self):
+        """Called during normal update/render period for this state
+           to update it's local or game data."""
+        pygame.display.set_caption(str(self.gc.clock.get_fps()))
+        #Mouse Position
+        mse=pygame.mouse.get_pos()
+
+    def render(self):
+        """Called during normal update/render period for this state
+           to render it's data in a specific way."""
+        self.gc.screen.fill((0,0,0))
+        self.gc.screen.blit(self.menuimg,(0,0))
+        pygame.display.flip()
+
+#end menu state
+        
 class TestState(GameState):
 
     def __init__(self):
@@ -209,7 +259,7 @@ if __name__ == "__main__":
     game.initialize()
 
     # Start first state
-    game.changeState(TestState)
+    game.changeState(MenuState)
 
     # Main Game Loop
     while game.running:
