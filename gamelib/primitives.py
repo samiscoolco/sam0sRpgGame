@@ -161,15 +161,15 @@ class Rectangle(BoundingVolume):
     # CLASS METHODS
     @classmethod
     def fromPoints(cls, top_left, bottom_right):
-        return Rect(top_left, bottom_right - top_left)
+        return Rectangle(top_left, bottom_right - top_left)
 
     @classmethod
     def fromPointSize(cls, vec_pos, width, height):
-        return Rect(vec_pos, Vector(width, height))
+        return Rectangle(vec_pos, Vector(width, height))
 
     @classmethod
     def fromSides(cls, left, top, right, bottom):
-        return Rect(Vector(left, top), Vector(right-left, bottom-top))
+        return Rectangle(Vector(left, top), Vector(right-left, bottom-top))
 
     # INSTANCE METHODS
     def __init__(self, pos, size):
@@ -186,7 +186,7 @@ class Rectangle(BoundingVolume):
                 return True
             return False
         # Rect
-        elif isinstance(entity, Rect):
+        elif isinstance(entity, Rectangle):
             entity_br = entity.pos + entity.size
             if (self.contains(entity.pos) and self.contains(entity_br)):
                 return True
