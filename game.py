@@ -116,7 +116,6 @@ class TestState(GameState):
 
         # For reference, actually set during initialize()
         self.player_anim = None
-        self.world_tiles = None
         self.world = None
 
         self.player = None
@@ -133,8 +132,7 @@ class TestState(GameState):
         self.player_anim.addAnim("walk_up", 12, 15)
         self.player_anim.addAnim("idle", 16, 19)#for npc right now
 
-        self.world_tiles = TileSet("sands.png", (25, 25))
-        self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
+        self.world = Level(self.gc.SCREEN_SIZE, "r00.lvl")
 
         self.player = Player(Point(64, 64), self.player_anim)
         self.test = testnpc(Point(120, 120), self.player_anim)

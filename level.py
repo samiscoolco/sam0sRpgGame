@@ -1,6 +1,10 @@
 
+from os import path
+import json
+
 import pygame as pg
 from gamelib.primitives import Entity
+from gamelib.asset import TileSet
 
 
 class Tile (Entity):
@@ -33,6 +37,9 @@ class Level(object):
                          int(area_size[1]/Level.TILE_HEIGHT)+1)
         self.tileset = tileset
 
+        self.lvlFile = None
+        self.imgFile = None
+
         if tileset:
             # pygame doesn't allow you to arbitrarily scale surfaces on blit,
             # so we must prescale the tileset to the tile size we want.
@@ -42,6 +49,7 @@ class Level(object):
         if filename:
             self.load(filename)
 
+
     def load(self, filename):
         """Load a level from the given file."""
 
@@ -49,13 +57,50 @@ class Level(object):
         if not filename or len(filename) == 0:
             return False
 
-        # For now, all we are doing is loading the world image associated with
-        # this level. Eventually, we should be loading from a level file that
-        # has all of the enemy and item locations as well.
-        self._worldImg = pg.image.load(filename)
+        # Allow from loading from PNG as well as 'lvl' files
+        base, ext = path.splitext(filename)
+        if ext.lower() == ".png":
+            self._worldImg = pg.image.load(filename)
+
+            self.name = path.basename(base)
+            self.name = path.basename(base)
+            self.lvlFile = base + ".lvl"
+            self.imgFile = filename
+            if not self.tileset:
+                raise ValueError("Manual Tileset required when loading Level from image!")
+
+        elif ext.lower() == ".lvl":
+            # Load from lvl file
+            with open(filename) as level:
+                self.lvlFile = filename
+
+                data = json.load(level)
+                print "Level Loaded: \n%s" % (data)
+                self.name = data['name']
+                tsImg = data['tilesetImage']
+                self.imgFile = data['worldImage']
+
+                if path.exists(tsImg):
+                    self.tileset = TileSet(tsImg, tuple(data['tilesetSize']))
+
+                else:
+                    raise ValueError("TileSet Image %s Not Found!" % tsImg)
+
+                if path.exists(self.imgFile):
+                    self._worldImg = pg.image.load(self.imgFile)
+                else:
+                    raise ValueError("World Image %s Not Found!" % self.imgFile)
+
+        else:
+            return False
+
+        # pygame doesn't allow you to arbitrarily scale surfaces on blit,
+        # so we must prescale the tileset to the tile size we want.
+        if self.tileset.tileSize[0] != Level.TILE_WIDTH or self.tileset.tileSize[1] != Level.TILE_HEIGHT:
+            self.tileset.resize((Level.TILE_WIDTH, Level.TILE_HEIGHT))
+                
         self.size = (self._worldImg.get_width() * Level.TILE_WIDTH,
                      self._worldImg.get_height() * Level.TILE_HEIGHT)
-        self.name = filename
 
         # Generate first area at origin, just in case
         self._currArea = pg.Surface(self.areaSize)
@@ -64,9 +109,26 @@ class Level(object):
         return True
 
 
-    def save(self, filename):
+    def save(self, filename = None):
         """Save current level state to file."""
-        pass
+        if not self.tileset:
+            return False
+
+        filename = filename if filename else self.lvlFile
+        print "Level saving to %s" % filename
+        with open(filename, 'w') as level:
+            data = { 'name': self.name, 
+                     'tilesetImage': self.tileset.filename,
+                     'tilesetSize': self.tileset.srcTileSize,
+                     'worldImage': self.imgFile
+                    }
+            json.dump(data, level, indent=True)
+
+            # Save out world image in case it was edited
+            pg.image.save(self._worldImg, self.imgFile)
+
+            return True
+        return False
 
 
     def render(self, surf):

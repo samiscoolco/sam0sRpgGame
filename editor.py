@@ -141,6 +141,7 @@ class EditorState(GameState):
 
     def leave(self):
         """Called whenever we switch from this state to another."""
+        self.level.save()
 
     def shutdown(self):
         """Called during application shutdown."""
