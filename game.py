@@ -192,15 +192,15 @@ class TestState(GameState):
 
 # end TestState
 
-
-if __name__ == "__main__":
-    
+# Keep game initialization code out of __main__ so
+# that it can be started from the EditorState.
+def startGame(initial_state, *args, **kargs):
     # Initialize Game
     game = RpgGame()
     game.initialize()
 
     # Start first state
-    game.changeState(TestState)
+    game.changeState(initial_state, *args, **kargs)
 
     # Main Game Loop
     while game.running:
@@ -208,5 +208,10 @@ if __name__ == "__main__":
 
     # Cleanup
     game.shutdown()
+
+
+if __name__ == "__main__":
+    startGame(TestState)
+
 # end main
 
