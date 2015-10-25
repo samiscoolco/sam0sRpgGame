@@ -138,7 +138,6 @@ class Level(object):
 
     def _generateArea(self, pos):
         """Generate a new area."""
-        
         print "_generateArea(%s)" % str(pos)
         # This is seperate from render() to allow caching the render to
         # _currArea to be used later by render().
@@ -148,7 +147,6 @@ class Level(object):
         world_pos = (pos[0]/tw, pos[1]/th)
         print "World Pos - %s" % str(world_pos)
         self.areaPos = pos
-        print "WOLRD POSITION: " + str(self.areaPos[0]/660) + "," + str(self.areaPos[1]/450)
         self._currArea.fill((0,0,255))
         for j in xrange(self.numTiles[1]):
             for i in xrange(self.numTiles[0]):
