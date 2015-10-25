@@ -116,7 +116,6 @@ class TestState(GameState):
 
         # For reference, actually set during initialize()
         self.player_anim = None
-        self.world_tiles = None
         self.world = None
 
         self.player = None
@@ -133,8 +132,7 @@ class TestState(GameState):
         self.player_anim.addAnim("walk_up", 12, 15)
         self.player_anim.addAnim("idle", 16, 19)#for npc right now
 
-        self.world_tiles = TileSet("sands.png", (25, 25))
-        self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
+        self.world = Level(self.gc.SCREEN_SIZE, "r00.lvl")
 
         self.player = Player(Point(64, 64), self.player_anim)
         self.test = testnpc(Point(120, 120), self.player_anim)
@@ -194,15 +192,15 @@ class TestState(GameState):
 
 # end TestState
 
-
-if __name__ == "__main__":
-    
+# Keep game initialization code out of __main__ so
+# that it can be started from the EditorState.
+def startGame(initial_state, *args, **kargs):
     # Initialize Game
     game = RpgGame()
     game.initialize()
 
     # Start first state
-    game.changeState(TestState)
+    game.changeState(initial_state, *args, **kargs)
 
     # Main Game Loop
     while game.running:
@@ -210,5 +208,10 @@ if __name__ == "__main__":
 
     # Cleanup
     game.shutdown()
+
+
+if __name__ == "__main__":
+    startGame(TestState)
+
 # end main
 

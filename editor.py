@@ -7,12 +7,15 @@ __copyright__ = "Copyright 2015, sam0sRpgGame"
 __credits__ = []
 
 
+import sys
 import pygame as pg
 from pygame.locals import *
 
 from gamelib.game import GameState
 from gamelib.asset import TileSet
 from gamelib.primitives import Rect, Point
+
+from level import Level
 
 
 class EditorState(GameState):
@@ -142,6 +145,7 @@ class EditorState(GameState):
 
     def leave(self):
         """Called whenever we switch from this state to another."""
+        self.level.save()
 
     def shutdown(self):
         """Called during application shutdown."""
@@ -195,6 +199,16 @@ if __name__ == "__main__":
     # the game directly into editor mode and bypass the Menu and Game States.
     # Right now, too many resources that the Editor relies on is being loaded
     # manually in TestState.
-    pass
+
+    # Load level specified in arguments passed to editor
+    if len(sys.argv) < 2:
+        print "You must specify a Level to edit!"
+        print "Usage: editor.py <level>"
+        sys.exit(-1)
+
+    world = Level((660, 450), sys.argv[1])
+
+    from game import startGame
+    startGame(EditorState, world)
 
 # end main
