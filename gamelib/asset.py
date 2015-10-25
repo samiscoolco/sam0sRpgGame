@@ -19,14 +19,17 @@ class TileSet(object):
     def __init__(self, filename, tile_size):
 
         self.tileSize = tile_size
+        self.srcTileSize = tile_size
         self.numTiles = 0
         self.tileCounts = (0,0)
         self.image = pg.image.load(filename)
+        self.filename = None
 
         if self.image:
             self.tileCounts = (self.image.get_width()/tile_size[0],
                                self.image.get_height()/tile_size[1])
             self.numTiles = self.tileCounts[0] * self.tileCounts[1]
+            self.filename = filename
 
 
     def render(self, surf, pos, tile_idx):
@@ -44,7 +47,24 @@ class TileSet(object):
         ty = tile_idx / self.tileCounts[0]
 
         return pg.Rect((tx*self.tileSize[0], ty*self.tileSize[1]), self.tileSize)
-        
+
+
+    def resize(self, new_tile_size):
+        new_size = (new_tile_size[0] * self.tileCounts[0], new_tile_size[1] * self.tileCounts[1])
+
+        try:
+            # Can throw if bit depth of image < 24 bits
+            self.image = pg.transform.smoothscale(self.image, new_size)
+            self.tileSize = new_tile_size
+        except:
+            print "Unable to resize TileSet to %s!" % str(new_size)
+            return False
+
+        return True
+
+    def getScale(self):
+        return (float(self.tileSize[0])/self.srcTileSize[0], float(self.tileSize[1])/self.srcTileSize[1])
+
 #end TileSet
 
 
