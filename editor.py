@@ -61,6 +61,7 @@ class EditorState(GameState):
         self.selected = self.level.getTileAt(self.level.areaPos)
 
     def processInput(self):
+        pg.display.set_caption(str(self.level.areaPos[0]/660) + "," + str(self.level.areaPos[1]/450) + "   |    lvl name: " + self.level.name)
         """Called during normal update/render period for this state
            to process it's input."""
         for e in pg.event.get():
