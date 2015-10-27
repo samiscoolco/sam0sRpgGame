@@ -25,7 +25,6 @@ class testnpc(Entity):
         self.animator = Animator(anim_set, Animator.MODE_STOPPED, 15)
         self.animator.setAnim("idle")
         self.vision = Circle(pos, testnpc.VIEW_DIST)
-
     def update(self, dt):   
             self.animator.update(dt)
 

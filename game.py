@@ -18,9 +18,8 @@ class Player(Entity):
         self.hp = 25
         self.maxhp = 25
         self.invpos = -665
-
         self.animator = Animator(anim_set, Animator.MODE_LOOP, 15.0)
-
+        self.animator.setAnim("idle")
     def inventory(self):
         #*Slide* into the DMs
         if self.invpos < 20:
@@ -39,19 +38,15 @@ class Player(Entity):
         # Only update player anim with actual movement
         if k[K_w]:
             self.pos.y -= Player.WALK_SPEED
-            self.animator.setAnim("walk_up")
             self.animator.update(dt)
         elif k[K_s]:
             self.pos.y += Player.WALK_SPEED
-            self.animator.setAnim("walk_down")
             self.animator.update(dt)
         if k[K_a]:
             self.pos.x -= Player.WALK_SPEED
-            self.animator.setAnim("walk_left")
             self.animator.update(dt)
         elif k[K_d]:
             self.pos.x += Player.WALK_SPEED
-            self.animator.setAnim("walk_right")
             self.animator.update(dt)
 
     def render(self, surf, offset = None):
@@ -62,8 +57,23 @@ class Player(Entity):
         pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
         pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
         self.animator.render(surf, screen_pos.intArgs())
-
-
+    def lookAt(self, pos):
+        # Determine direction
+        d =pos - self.pos
+        frame = 0
+        if d.x >= d.y:
+            frame = 1 if d.x >= -d.y else 3
+        else:
+            frame = 0 if d.x >= -d.y else 2
+       #Determine which anim set to use.
+        if frame == 3:
+            self.animator.setAnim("walk_up")
+        if frame == 2:
+            self.animator.setAnim("walk_left")
+        if frame == 1:
+            self.animator.setAnim("walk_right")
+        if frame == 0:
+            self.animator.setAnim("walk_down")
 
 class RpgGame(GameClass):
 
@@ -158,7 +168,8 @@ class TestState(GameState):
         """Called during normal update/render period for this state
            to update it's local or game data."""
         pygame.display.set_caption(str(self.gc.clock.get_fps()))
-
+        #Mouse Position
+        mse=pygame.mouse.get_pos()
         # Keep player from leaving game world
         # This should eventually be moved into Player
         p, w, t = self.player, self.world, self.test
@@ -176,7 +187,7 @@ class TestState(GameState):
         # Have NPC look at player if they get close
         if t.vision.contains(p.pos):
             t.lookAt(p.pos)
-
+        p.lookAt(Point(mse[0],mse[1]))
         w.move(p.pos.intArgs())
 
     def render(self):
