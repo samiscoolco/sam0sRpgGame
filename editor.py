@@ -105,7 +105,7 @@ class EditorState(GameState):
         """Called during normal update/render period for this state
            to render it's data in a specific way."""
         surf = self.gc.screen
-        view_offset = self.level.areaPos
+        view_offset = self.level.getTilePos(self.level.getTileAt(self.level.areaPos))
 
         surf.fill((0,0,0))
         self.level.render(surf)
@@ -165,7 +165,7 @@ class EditorState(GameState):
         else:
             # Always handle world clicking last
             wpos = mpos + Point(*self.level.areaPos)
-            self.selected = (int(mpos.x/self.level.TILE_WIDTH), int(mpos.y/self.level.TILE_HEIGHT))
+            self.selected = self.level.getTileAt(wpos.args())
 
     def _handleKeydown(self, key):
 
