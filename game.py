@@ -4,7 +4,7 @@ from pygame.locals import *
 from gamelib.game import GameClass, GameState
 from gamelib.primitives import Point,Rectangle
 from gamelib.asset import *
-from testnpc import testnpc
+from testnpc import testcompanion
 from level import *
 from gamestates import *
 

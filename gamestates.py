@@ -5,9 +5,8 @@ from gamelib.asset import *
 import pygame
 from pygame.locals import *
 from level import *
-from testnpc import testnpc
+from testnpc import testcompanion
 from game import Player
-
 class TestState(GameState):
 
     def __init__(self):
@@ -36,7 +35,7 @@ class TestState(GameState):
         self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
 
         self.player = Player(Point(64, 64), self.player_anim)
-        self.test = testnpc(Point(120, 120), self.player_anim)
+        self.test = testcompanion(Point(120, 120), self.player_anim)
 
 
     def enter(self):
@@ -61,7 +60,7 @@ class TestState(GameState):
         # This should eventually be moved into Player
         p, w, t = self.player, self.world, self.test
         p.update(self.gc.time_step)
-        t.update(self.gc.time_step)
+        t.update(self.gc.time_step,p)
         if p.pos.x < 0:
             p.pos.x = 1
         elif p.pos.x >= w.size[0]:
@@ -72,8 +71,8 @@ class TestState(GameState):
             p.pos.y = w.size[1] - 1
 
         # Have NPC look at player if they get close
-        if t.vision.contains(p.pos):
-            t.lookAt(p.pos)
+        #if t.vision.contains(p.pos):
+            #t.lookAt(p.pos)
         p.lookAt(Point(mse[0],mse[1]))
         w.move(p.pos.intArgs())
 
@@ -94,7 +93,6 @@ class MenuState(GameState):
 
     def __init__(self):
         GameState.__init__(self)
-
         # For reference, actually set during initialize()
         self.player_anim = None
         self.world_tiles = None
