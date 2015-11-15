@@ -4,9 +4,39 @@ from pygame.locals import *
 from gamelib.game import GameClass, GameState
 from gamelib.primitives import Point,Rectangle
 from gamelib.asset import *
-from testnpc import testcompanion
+from testnpc import Companion
 from level import *
 from gamestates import *
+import items
+
+class Hud(Entity):
+    def __init__(self):
+        Entity.__init__(self)
+        self.invpos = -665
+        self.invlock = False
+        self.lockrect=Rectangle.fromPoints(Point(40,self.invpos+10),Point(72,self.invpos+32))
+    def update(self):
+        mse=Point(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1])
+        k = pygame.key.get_pressed()
+        self.lockrect=Rectangle.fromPoints(Point(40,self.invpos+10),Point(72,self.invpos+42))
+        #Inventory Key
+        if k[K_TAB]:
+            if self.invpos < 20:
+                self.invpos+=35
+            self.invlock=False
+        elif self.invpos>-665 and self.invlock == False:
+            if self.lockrect.contains(mse):
+                self.invlock=True
+                self.invpos=20
+            else:
+                self.invpos-=50
+        
+    def render(self,surf, offset = None):
+        pygame.draw.rect(surf, (200,150,150), (30,self.invpos, 600, 400), 0)
+        pygame.draw.rect(surf, (  0,  0,  0), (40,self.invpos + 10, 32, 32), 0)
+        pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
+        pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
+
 
 class Player(Entity):
 
@@ -20,19 +50,20 @@ class Player(Entity):
         self.invpos = -665
         self.animator = Animator(anim_set, Animator.MODE_LOOP, 15.0)
         self.animator.setAnim("idle")
-    def inventory(self):
-        #*Slide* into the DMs
-        if self.invpos < 20:
-            self.invpos+=35
-
+        self.mouseoffset = 0
+        self.invdock = False
+        self.inventory = []
     def update(self, dt):
 
         k = pygame.key.get_pressed()
         
         #Inventory Key
         if k[K_i]:
-            self.inventory()
-        elif self.invpos>-665:
+            print self.inventory
+            self.inventory[0].destroy()
+            if self.invpos < 20:
+                self.invpos+=35
+        elif self.invpos>-665 and self.invdock == False:
             self.invpos-=50
         
         # Only update player anim with actual movement
@@ -52,12 +83,9 @@ class Player(Entity):
     def render(self, surf, offset = None):
         screen_pos = self.pos + offset if offset else self.pos
         #inventory box:
-        pygame.draw.rect(surf, (200,150,150), (30,self.invpos, 600, 400), 0)
-        pygame.draw.rect(surf, (  0,  0,  0), (180,self.invpos + 50, 100, 100), 0)
-        pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
-        pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
+
         self.animator.render(surf, screen_pos.intArgs())
-    def lookAt(self, pos):
+    def lookAt(self, pos):     
         # Determine direction
         d =pos - self.pos
         frame = 0
@@ -79,7 +107,7 @@ class RpgGame(GameClass):
 
     def __init__(self):
         GameClass.__init__(self)
-
+        
         # Global Constants
         self.SCREEN_SIZE = (660, 450)
         self.DESIRED_FPS = 32

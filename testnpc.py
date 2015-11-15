@@ -60,7 +60,7 @@ def MovePoint(target0,target1,selfx,selfy,movespeed):
     pos_change = [direction[0] * movespeed, direction[1] * movespeed]
     return pos_change
 
-class testcompanion(Entity):
+class Companion(Entity):
 
     def __init__(self, pos, anim_set):
         Entity.__init__(self, pos)

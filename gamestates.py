@@ -5,8 +5,10 @@ from gamelib.asset import *
 import pygame
 from pygame.locals import *
 from level import *
-from testnpc import testcompanion
-from game import Player
+from testnpc import Companion
+from game import Player,Hud
+import items
+
 class TestState(GameState):
 
     def __init__(self):
@@ -35,7 +37,9 @@ class TestState(GameState):
         self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
 
         self.player = Player(Point(64, 64), self.player_anim)
-        self.test = testcompanion(Point(120, 120), self.player_anim)
+        self.player.inventory.append(items.Apple(self.player.inventory))
+        self.test = Companion(Point(120, 120), self.player_anim)
+        self.hud = Hud()
 
 
     def enter(self):
@@ -58,9 +62,11 @@ class TestState(GameState):
         mse=pygame.mouse.get_pos()
         # Keep player from leaving game world
         # This should eventually be moved into Player
-        p, w, t = self.player, self.world, self.test
+        p, w, t, h = self.player, self.world, self.test, self.hud
+        
         p.update(self.gc.time_step)
         t.update(self.gc.time_step,p)
+        h.update()
         if p.pos.x < 0:
             p.pos.x = 1
         elif p.pos.x >= w.size[0]:
@@ -73,7 +79,7 @@ class TestState(GameState):
         # Have NPC look at player if they get close
         #if t.vision.contains(p.pos):
             #t.lookAt(p.pos)
-        p.lookAt(Point(mse[0],mse[1]))
+        p.lookAt(Point(mse[0]+self.world.areaPos[0],mse[1]+self.world.areaPos[1]))
         w.move(p.pos.intArgs())
 
     def render(self):
@@ -85,6 +91,7 @@ class TestState(GameState):
         offset = -Point(*self.world.areaPos)
         self.player.render(self.gc.screen, offset)
         self.test.render(self.gc.screen, offset)
+        self.hud.render(self.gc.screen, offset)
         pygame.display.flip()
 
 # end TestState
