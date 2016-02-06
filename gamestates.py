@@ -37,9 +37,10 @@ class TestState(GameState):
         self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
 
         self.player = Player(Point(64, 64), self.player_anim)
-        self.player.inventory.append(items.Apple(self.player.inventory))
+        self.player.give(items.Apple(self.player,self.player.inventory),22)
+        self.player.take("app",2)
         self.test = Companion(Point(120, 120), self.player_anim)
-        self.hud = Hud()
+        self.hud = Hud(self.player)
 
 
     def enter(self):

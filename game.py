@@ -1,6 +1,5 @@
-import pygame
+import pygame,os
 from pygame.locals import *
-
 from gamelib.game import GameClass, GameState
 from gamelib.primitives import Point,Rectangle
 from gamelib.asset import *
@@ -8,10 +7,15 @@ from testnpc import Companion
 from level import *
 from gamestates import *
 import items
+pygame.font.init()
+FontInv=pygame.font.Font(None,15)
 
 class Hud(Entity):
-    def __init__(self):
+    def __init__(self,t):
+        self.imagerepo=[pygame.image.load(os.path.join('images','apple.png'))]
         Entity.__init__(self)
+        self.target = t
+        self.targinv=t.inventory
         self.invpos = -665
         self.invlock = False
         self.lockrect=Rectangle.fromPoints(Point(40,self.invpos+10),Point(72,self.invpos+32))
@@ -30,16 +34,23 @@ class Hud(Entity):
                 self.invpos=20
             else:
                 self.invpos-=50
-        
+
     def render(self,surf, offset = None):
-        pygame.draw.rect(surf, (200,150,150), (30,self.invpos, 600, 400), 0)
-        pygame.draw.rect(surf, (  0,  0,  0), (40,self.invpos + 10, 32, 32), 0)
-        pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
-        pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
+        if self.invpos >-300:
+            #Inv Background
+            pygame.draw.rect(surf, (200,150,150), (30,self.invpos, 600, 400), 0)
+            #Lock Button
+            pygame.draw.rect(surf, (  0,  0,  0), (40,self.invpos + 10, 32, 32), 0)
+            #Slot 1
+            pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
+            surf.blit(self.imagerepo[self.targinv[0].imgnum],(350,self.invpos+50))
+            surf.blit(FontInv.render(str(self.targinv[0].stack),0,(255,255,255)),(360,self.invpos+72))
+            #Slot 2
+            #pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
+            #surf.blit(self.imagerepo[self.targinv[1].imgnum],(350,self.invpos+50))
 
 
 class Player(Entity):
-
     WALK_SPEED = 3
 
     def __init__(self, pos, anim_set):
@@ -53,20 +64,36 @@ class Player(Entity):
         self.mouseoffset = 0
         self.invdock = False
         self.inventory = []
+
+        #Greater food = More hungry; 100 = Starving; 50 = Indifferent; 0 = Very Full; (0-25 Could possibly give a buff)
+        self.food = 50
+    def give(self,item,quant):
+        #give items
+        for x in range(quant):
+            self.inventory.append(item)
+        #auto stack
+        stack = self.inventory.count(item)
+        self.inventory=list(set(self.inventory))
+        self.inventory[self.inventory.index(item)].stack = stack
+    def take(self,item,quant):
+        #take items
+        for x in self.inventory:
+            if x.name == item:
+                x.stack-=quant
+                print x.stack
     def update(self, dt):
 
         k = pygame.key.get_pressed()
-        
-        #Inventory Key
-        if k[K_i]:
-            print self.inventory
-            self.inventory[0].destroy()
-            if self.invpos < 20:
-                self.invpos+=35
-        elif self.invpos>-665 and self.invdock == False:
-            self.invpos-=50
-        
+
         # Only update player anim with actual movement
+        if k[K_e]:
+            for x in self.inventory:
+                if x.type == "con":
+                    print "FOOD B4:" + str(self.food)
+                    x.Use()
+                    self.take("app",1)
+                    print "FOOD AFRTER:" + str(self.food)
+
         if k[K_w]:
             self.pos.y -= Player.WALK_SPEED
             self.animator.update(dt)
@@ -82,10 +109,9 @@ class Player(Entity):
 
     def render(self, surf, offset = None):
         screen_pos = self.pos + offset if offset else self.pos
-        #inventory box:
 
         self.animator.render(surf, screen_pos.intArgs())
-    def lookAt(self, pos):     
+    def lookAt(self, pos):
         # Determine direction
         d =pos - self.pos
         frame = 0
@@ -103,11 +129,14 @@ class Player(Entity):
         if frame == 0:
             self.animator.setAnim("walk_down")
 
+
+
+
 class RpgGame(GameClass):
 
     def __init__(self):
         GameClass.__init__(self)
-        
+
         # Global Constants
         self.SCREEN_SIZE = (660, 450)
         self.DESIRED_FPS = 32
@@ -118,6 +147,7 @@ class RpgGame(GameClass):
         self.clock = None
         self.time = 0
         self.time_step = 0.0
+
 
     def initialize(self):
         GameClass.initialize(self)
@@ -145,9 +175,9 @@ class RpgGame(GameClass):
         self.running = False
 
 # end RpgGame
-        
+
 if __name__ == "__main__":
-    
+
     # Initialize Game
     game = RpgGame()
     game.initialize()
@@ -161,4 +191,3 @@ if __name__ == "__main__":
     # Cleanup
     game.shutdown()
 # end main
-
