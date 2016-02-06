@@ -1,0 +1,5 @@
+{
+ "worldImage": "r01.png", 
+ "tileset": "desert_tileset32x32.ts", 
+ "name": "Test Level"
+}

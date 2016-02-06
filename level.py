@@ -18,6 +18,74 @@ class Tile (Entity):
 
 # end Tile
 
+class AdvancedTileSet(TileSet):
+
+    TERRAIN_TILE_COUNT = 20
+
+    def __init__(self, ts_file = None):
+
+        self.tsFile = None
+        self.terrain = {}
+        assert(self.load(ts_file))
+
+
+    def load(self, ts_file):
+
+        # Must be .ts file
+        if path.splitext(ts_file)[1].lower() != ".ts":
+            return False
+
+        with open(ts_file) as tsf:
+            data = json.load(tsf)
+            print "Tileset Loaded: %s" % (data)
+
+            # Let TileSet do its thing
+            TileSet.__init__(self, data['image'], data['tileSize'])
+
+            # direct store of the terrain border bitmask data
+            terrain = data.get('terrain')
+            if terrain:
+                for t, mask in terrain.iteritems():
+                    if len(mask) >= self.TERRAIN_TILE_COUNT:
+                        self.terrain[t] = mask
+                    else:
+                        print "%s: Terrain %s does not have enough tiles! Found %i, expected %i." % (ts_file, t, len(mask), self.TERRAIN_TILE_COUNT)
+            else:
+                print "%s: No Terrain data found." % (ts_file)
+
+            # Override filename
+            self.filename = ts_file
+            return True
+
+
+    def getTerrainTile(self, terrain, border_offset):
+        t = self.terrain.get(terrain)
+        if t and border_offset < len(t):
+            return t[border_offset]
+        return None
+
+
+    def genTerrainIcon(self, terrain, size):
+        t = self.terrain.get(terrain)
+        if t:
+            icon = pg.Surface(self.tileSize)
+            # Tile 16 acts as the "standalone" tile for Terrain,
+            # Use it as the Icon (after resizing)
+            self.render(icon, (0,0), 15)
+            icon = pg.transform.smoothscale(icon, size)
+            return icon
+        return None
+
+
+    def matchTerrain(self, terrain, tile_idx):
+        t = self.terrain.get(terrain)
+        if t:
+            #print "%i - %s" % (tile_idx, str(t))
+            return tile_idx in t
+        return False
+
+# end AdvancedTileSet
+
 
 class Level(object):
 
@@ -77,14 +145,16 @@ class Level(object):
                 data = json.load(level)
                 print "Level Loaded: \n%s" % (data)
                 self.name = data['name']
-                tsImg = data['tilesetImage']
                 self.imgFile = data['worldImage']
 
-                if path.exists(tsImg):
-                    self.tileset = TileSet(tsImg, tuple(data['tilesetSize']))
-
+                if 'tileset' in data:
+                    ts_file = data['tileset']
+                    if path.exists(ts_file):
+                        self.tileset = AdvancedTileSet(ts_file)
+                    else:
+                        raise ValueError("TileSet %s Not Found!" % ts_file)
                 else:
-                    raise ValueError("TileSet Image %s Not Found!" % tsImg)
+                    raise ValueError("No TileSet Info Found!")
 
                 if path.exists(self.imgFile):
                     self._worldImg = pg.image.load(self.imgFile)
@@ -118,8 +188,7 @@ class Level(object):
         print "Level saving to %s" % filename
         with open(filename, 'w') as level:
             data = { 'name': self.name, 
-                     'tilesetImage': self.tileset.filename,
-                     'tilesetSize': self.tileset.srcTileSize,
+                     'tileset': self.tileset.filename,
                      'worldImage': self.imgFile
                     }
             json.dump(data, level, indent=True)
@@ -152,7 +221,7 @@ class Level(object):
            return False
 
         # Calculate new area pos
-        print "move%s" % str(pos)
+        #print "move%s" % str(pos)
         self._generateArea((int(pos[0]/self.areaSize[0]) * self.areaSize[0],
                             int(pos[1]/self.areaSize[1]) * self.areaSize[1]))
         return True
@@ -189,6 +258,10 @@ class Level(object):
         return pg.Rect(pos[0], pos[1], Level.TILE_WIDTH, Level.TILE_HEIGHT)
 
 
+    def getTile(self, tile):
+        return self._worldImg.get_at(tile).r
+
+
     def setTile(self, tile, ts_index):
         # Tile visual is stored in R value
         self._worldImg.set_at(tile, pg.Color(ts_index, 0, 0))
@@ -200,14 +273,14 @@ class Level(object):
 
     def _generateArea(self, pos):
         """Generate a new area."""
-        print "_generateArea(%s)" % str(pos)
+        #print "_generateArea(%s)" % str(pos)
         # This is seperate from render() to allow caching the render to
         # _currArea to be used later by render().
         # Eventually, we will be rendering static object sprites on top
         # of the background image and shouldn't need to do that on every frame.
         tw, th = (Level.TILE_WIDTH, Level.TILE_HEIGHT)
         world_pos = (pos[0]/tw, pos[1]/th)
-        print "World Pos - %s" % str(world_pos)
+        #print "World Pos - %s" % str(world_pos)
         self.areaPos = pos
         self._currArea.fill((0,0,255))
         for j in xrange(self.numTiles[1]):
@@ -218,9 +291,7 @@ class Level(object):
                 if self.tileset:
                     pg.draw.rect(self._currArea, (128, 128, 128), targetRect, 1)
                     if px[2] == 176:
-                        self.tileset.render(self._currArea, targetRect, 0)
-                    elif px[0] == 0:
-                        self.tileset.render(self._currArea, targetRect, 12)
+                        self.tileset.render(self._currArea, targetRect, 18)
                     else:
                         self.tileset.render(self._currArea, targetRect, px[0])
                 else:
