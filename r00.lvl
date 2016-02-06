@@ -1,9 +1,5 @@
 {
  "worldImage": "r00.png", 
- "tilesetSize": [
-  25, 
-  25
- ], 
- "name": "r00", 
- "tilesetImage": "sands.png"
+ "tileset": "sands.ts", 
+ "name": "r00"
 }

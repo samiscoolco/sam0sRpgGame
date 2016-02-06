@@ -142,7 +142,7 @@ class TestState(GameState):
         self.player_anim.addAnim("walk_up", 12, 15)
         self.player_anim.addAnim("idle", 16, 19)#for npc right now
 
-        self.world = Level(self.gc.SCREEN_SIZE, "r00.lvl")
+        self.world = Level(self.gc.SCREEN_SIZE, "r01.lvl")
 
         self.player = Player(Point(64, 64), self.player_anim)
         self.test = testnpc(Point(120, 120), self.player_anim)
