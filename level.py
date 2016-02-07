@@ -89,8 +89,8 @@ class AdvancedTileSet(TileSet):
 
 class Level(object):
 
-    TILE_WIDTH = 50
-    TILE_HEIGHT = 50
+    TILE_WIDTH = 32
+    TILE_HEIGHT = 32
 
 
     def __init__(self, area_size, filename = None, tileset = None):
