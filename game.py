@@ -17,33 +17,30 @@ class Hud(Entity):
         self.target = t
         self.targinv=t.inventory
         self.invpos = -665
-        self.invlock = False
-        self.lockrect=Rectangle.fromPoints(Point(40,self.invpos+10),Point(72,self.invpos+32))
+        self.invlock = 0
     def update(self):
         mse=Point(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1])
         k = pygame.key.get_pressed()
-        self.lockrect=Rectangle.fromPoints(Point(40,self.invpos+10),Point(72,self.invpos+42))
-        #Inventory Key
-        if k[K_TAB]:
-            if self.invpos < 20:
-                self.invpos+=35
-            self.invlock=False
-        elif self.invpos>-665 and self.invlock == False:
-            if self.lockrect.contains(mse):
-                self.invlock=True
-                self.invpos=20
-            else:
-                self.invpos-=50
+
+        #Inventory Key Press/Release
+        if not k[K_TAB]:
+            if self.invlock==4:self.invlock=0
+            if self.invlock==1:self.invlock=3
+        if k[K_TAB] and self.invlock==0:
+            self.invpos=30
+            self.invlock=1
+        if k[K_TAB] and self.invlock==3:
+            self.invlock=4
+            self.invpos=-600
+
 
     def render(self,surf, offset = None):
         if self.invpos >-300:
             #Inv Background
             pygame.draw.rect(surf, (200,150,150), (30,self.invpos, 600, 400), 0)
-            #Lock Button
-            pygame.draw.rect(surf, (  0,  0,  0), (40,self.invpos + 10, 32, 32), 0)
             #Slot 1
-            pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
-            surf.blit(self.imagerepo[self.targinv[0].imgnum],(350,self.invpos+50))
+            pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 45, 45), 0)
+            surf.blit(self.imagerepo[self.targinv[0].imgnum],(339,self.invpos+57))
             surf.blit(FontInv.render(str(self.targinv[0].stack),0,(255,255,255)),(360,self.invpos+72))
             #Slot 2
             #pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
@@ -88,11 +85,10 @@ class Player(Entity):
         # Only update player anim with actual movement
         if k[K_e]:
             for x in self.inventory:
-                if x.type == "con":
-                    print "FOOD B4:" + str(self.food)
-                    x.Use()
-                    self.take("app",1)
-                    print "FOOD AFRTER:" + str(self.food)
+                print "FOOD B4:" + str(self.food)
+                x.Use()
+                self.take("apple",1)
+                print "FOOD AFRTER:" + str(self.food)
 
         if k[K_w]:
             self.pos.y -= Player.WALK_SPEED

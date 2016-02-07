@@ -37,8 +37,8 @@ class TestState(GameState):
         self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
 
         self.player = Player(Point(64, 64), self.player_anim)
-        self.player.give(items.Apple(self.player,self.player.inventory),22)
-        self.player.take("app",2)
+        self.player.give(items.Food(self.player,"apple",self.player.inventory),22)
+        self.player.take("apple",3)
         self.test = Companion(Point(120, 120), self.player_anim)
         self.hud = Hud(self.player)
 
@@ -64,7 +64,7 @@ class TestState(GameState):
         # Keep player from leaving game world
         # This should eventually be moved into Player
         p, w, t, h = self.player, self.world, self.test, self.hud
-        
+
         p.update(self.gc.time_step)
         t.update(self.gc.time_step,p)
         h.update()
