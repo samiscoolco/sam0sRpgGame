@@ -71,7 +71,7 @@ class AdvancedTileSet(TileSet):
             icon = pg.Surface(self.tileSize)
             # Tile 16 acts as the "standalone" tile for Terrain,
             # Use it as the Icon (after resizing)
-            self.render(icon, (0,0), 15)
+            self.render(icon, (0,0), t[15])
             icon = pg.transform.smoothscale(icon, size)
             return icon
         return None
