@@ -273,7 +273,8 @@ class Level(object):
 
     def _generateArea(self, pos):
         """Generate a new area."""
-        #print "_generateArea(%s)" % str(pos)
+        print "_generateArea(%s)" % str(pos)
+
         # This is seperate from render() to allow caching the render to
         # _currArea to be used later by render().
         # Eventually, we will be rendering static object sprites on top

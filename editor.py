@@ -99,6 +99,7 @@ class EditorState(GameState):
         self.selected = self.level.getTileAt(self.level.areaPos)
 
     def processInput(self):
+        pg.display.set_caption(str(self.level.areaPos[0]/660) + "," + str(self.level.areaPos[1]/450) + "   |    lvl name: " + self.level.name)
         """Called during normal update/render period for this state
            to process it's input."""
         for e in pg.event.get():
@@ -109,7 +110,7 @@ class EditorState(GameState):
             elif e.type == KEYUP:
                 if e.key == K_TAB:
                     from game import TestState
-                    self.gc.changeState(TestState)
+                    self.gc.changeState(TestState, self.level.lvlFile)
             elif e.type == MOUSEBUTTONDOWN:
                 self._handleClick(e.button, e.pos)
 
@@ -139,7 +140,7 @@ class EditorState(GameState):
         """Called during normal update/render period for this state
            to render it's data in a specific way."""
         surf = self.gc.screen
-        view_offset = self.level.areaPos
+        view_offset = self.level.getTilePos(self.level.getTileAt(self.level.areaPos))
 
         surf.fill((0,0,0))
         self.level.render(surf)
@@ -219,7 +220,7 @@ class EditorState(GameState):
         else:
             # Always handle world clicking last
             wpos = mpos + Point(*self.level.areaPos)
-            self.selected = (int(mpos.x/self.level.TILE_WIDTH), int(mpos.y/self.level.TILE_HEIGHT))
+            self.selected = self.level.getTileAt(wpos.args())
 
     def _handleKeydown(self, key):
 

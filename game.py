@@ -142,15 +142,17 @@ class TestState(GameState):
         self.player_anim.addAnim("walk_up", 12, 15)
         self.player_anim.addAnim("idle", 16, 19)#for npc right now
 
-        self.world = Level(self.gc.SCREEN_SIZE, "r01.lvl")
-
         self.player = Player(Point(64, 64), self.player_anim)
         self.test = testnpc(Point(120, 120), self.player_anim)
 
+        self.world = None
 
-    def enter(self):
+
+    def enter(self, level_file):
         """Called every time the game is switched to this state."""
-        pass
+        # Load level if it is different from our current one.
+        if not self.world or self.world.lvlFile != level_file:
+            self.world = Level(self.gc.SCREEN_SIZE, level_file)
 
     def processInput(self):
         """Called during normal update/render period for this state
@@ -222,7 +224,7 @@ def startGame(initial_state, *args, **kargs):
 
 
 if __name__ == "__main__":
-    startGame(TestState)
+    startGame(TestState, "r00.lvl")
 
 # end main
 
