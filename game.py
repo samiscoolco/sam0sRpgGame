@@ -49,6 +49,7 @@ class Player(Entity):
             self.pos.x += Player.WALK_SPEED
             self.animator.update(dt)
 
+
     def render(self, surf, offset = None):
         screen_pos = self.pos + offset if offset else self.pos
         #inventory box:
@@ -57,6 +58,8 @@ class Player(Entity):
         pygame.draw.rect(surf, (  0,  0,  0), (330,self.invpos + 50, 100, 100), 0)
         pygame.draw.rect(surf, (  0,  0,  0), (480,self.invpos + 50, 100, 100), 0)
         self.animator.render(surf, screen_pos.intArgs())
+
+
     def lookAt(self, pos):
         # Determine direction
         d =pos - self.pos
@@ -104,7 +107,7 @@ class RpgGame(GameClass):
         # be used by GameState this frame
         self.clock.tick(self.DESIRED_FPS)
         self.time = pygame.time.get_ticks()
-        self.time_step = self.clock.get_rawtime()/1000.0
+        self.time_step = self.clock.get_time()/1000.0
 
         GameClass.update(self)
 
@@ -224,7 +227,7 @@ def startGame(initial_state, *args, **kargs):
 
 
 if __name__ == "__main__":
-    startGame(TestState, "r00.lvl")
+    startGame(TestState, "r01.lvl")
 
 # end main
 
