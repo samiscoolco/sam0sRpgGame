@@ -7,6 +7,7 @@ from testnpc import Companion
 from level import *
 from gamestates import *
 import items
+
 pygame.font.init()
 FontInv=pygame.font.Font(None,15)
 
@@ -103,10 +104,13 @@ class Player(Entity):
             self.pos.x += Player.WALK_SPEED
             self.animator.update(dt)
 
+
     def render(self, surf, offset = None):
         screen_pos = self.pos + offset if offset else self.pos
 
         self.animator.render(surf, screen_pos.intArgs())
+
+
     def lookAt(self, pos):
         # Determine direction
         d =pos - self.pos
@@ -158,7 +162,7 @@ class RpgGame(GameClass):
         # be used by GameState this frame
         self.clock.tick(self.DESIRED_FPS)
         self.time = pygame.time.get_ticks()
-        self.time_step = self.clock.get_rawtime()/1000.0
+        self.time_step = self.clock.get_time()/1000.0
 
         GameClass.update(self)
 
@@ -172,13 +176,15 @@ class RpgGame(GameClass):
 
 # end RpgGame
 
-if __name__ == "__main__":
-
+# Keep game initialization code out of __main__ so
+# that it can be started from the EditorState.
+def startGame(initial_state, *args, **kargs):
     # Initialize Game
     game = RpgGame()
     game.initialize()
+
     # Start first state
-    game.changeState(MenuState)
+    game.changeState(initial_state)
 
     # Main Game Loop
     while game.running:
@@ -186,4 +192,9 @@ if __name__ == "__main__":
 
     # Cleanup
     game.shutdown()
+
+
+if __name__ == "__main__":
+    startGame(MenuState)
+
 # end main

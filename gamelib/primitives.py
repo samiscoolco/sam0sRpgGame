@@ -122,7 +122,7 @@ class Size(Vector):
     _ATTR_STRING = "whl"
 #end Size
 
-class Entity:
+class Entity(object):
     def __init__(self, position=[0,0]):
         self.pos = position
 
@@ -233,8 +233,21 @@ class Rectangle(BoundingVolume):
     def height(self):
         return self.size[1]
 
+    def args(self):
+        return (self.pos[0], self.pos[1], self.size[0], self.size[1])
+
+    def intArgs(self):
+        return (int(self.pos[0]), int(self.pos[1]), int(self.size[0]), int(self.size[1]))
+
     def __repr__(self):
         return "[%s-%s]" % (str(self.pos), str(self.size))
+
+    def __getattr__(self, attr):
+        if attr == "left": return self.pos[0]
+        elif attr == "top": return self.pos[1]
+        elif attr == "right": return self.pos[0] + self.size[0]
+        elif attr == "bottom": return self.pos[1] + self.size[1]
+        raise AttributeError
 
 #end Rect
 

@@ -16,7 +16,6 @@ class TestState(GameState):
 
         # For reference, actually set during initialize()
         self.player_anim = None
-        self.world_tiles = None
         self.world = None
 
         self.player = None
@@ -33,9 +32,6 @@ class TestState(GameState):
         self.player_anim.addAnim("walk_up", 12, 15)
         self.player_anim.addAnim("idle", 16, 19)#for npc right now
 
-        self.world_tiles = TileSet("sands.png", (25, 25))
-        self.world = Level(self.gc.SCREEN_SIZE, "r00.png", self.world_tiles)
-
         self.player = Player(Point(64, 64), self.player_anim)
         self.player.give(items.Food(self.player,"apple",self.player.inventory),22)
         self.player.take("apple",3)
@@ -43,9 +39,10 @@ class TestState(GameState):
         self.hud = Hud(self.player)
 
 
-    def enter(self):
+    def enter(self, level_file):
         """Called every time the game is switched to this state."""
-        pass
+        if not self.world or self.world.lvlFile != level_file:
+            self.world = Level(self.gc.SCREEN_SIZE, level_file)
 
     def processInput(self):
         """Called during normal update/render period for this state
@@ -118,7 +115,6 @@ class MenuState(GameState):
 
     def enter(self):
         print "welcome to the menu"
-        pass
 
     def processInput(self):
         mse=Point(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1])
@@ -131,7 +127,7 @@ class MenuState(GameState):
             if e.type == MOUSEBUTTONUP:
                 if e.button == 1:
                     if self.button1.contains(mse):
-                        self.gc.changeState(TestState)
+                        self.gc.changeState(TestState, "r01.lvl")
                     if self.button2.contains(mse):
                         self.gc.changeState(OptionsState)
                     if self.button3.contains(mse):
