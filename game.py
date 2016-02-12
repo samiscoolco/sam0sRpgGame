@@ -194,7 +194,7 @@ def startGame(initial_state, *args, **kargs):
 
 
 if __name__ == "__main__":
-    from states.gamestates import MenuState
+    from states.menu import MenuState
     startGame(MenuState)
 
 # end main

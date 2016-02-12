@@ -109,8 +109,8 @@ class EditorState(GameState):
                 self._handleKeydown(e.key)
             elif e.type == KEYUP:
                 if e.key == K_TAB:
-                    from states.gamestates import TestState
-                    self.gc.changeState(TestState, self.level.lvlFile)
+                    from states.world import WorldState
+                    self.gc.changeState(WorldState, self.level.lvlFile)
             elif e.type == MOUSEBUTTONDOWN:
                 self._handleClick(e.button, e.pos)
 
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     # After the Level become more self contained, we can use this area to launch
     # the game directly into editor mode and bypass the Menu and Game States.
     # Right now, too many resources that the Editor relies on is being loaded
-    # manually in TestState.
+    # manually in WorldState.
 
     # Load level specified in arguments passed to editor
     if len(sys.argv) < 2:
