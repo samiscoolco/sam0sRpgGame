@@ -5,6 +5,7 @@ import json
 import pygame as pg
 from gamelib.primitives import Entity
 from gamelib.asset import TileSet
+import paths
 
 
 class Tile (Entity):
@@ -40,7 +41,7 @@ class AdvancedTileSet(TileSet):
             print "Tileset Loaded: %s" % (data)
 
             # Let TileSet do its thing
-            TileSet.__init__(self, data['image'], data['tileSize'])
+            TileSet.__init__(self, paths.getLevelPath(data['image']), data['tileSize'])
 
             # direct store of the terrain border bitmask data
             terrain = data.get('terrain')
@@ -128,7 +129,7 @@ class Level(object):
         # Allow from loading from PNG as well as 'lvl' files
         base, ext = path.splitext(filename)
         if ext.lower() == ".png":
-            self._worldImg = pg.image.load(filename)
+            self._worldImg = pg.image.load(paths.getLevelPath(filename))
 
             self.name = path.basename(base)
             self.name = path.basename(base)
@@ -139,7 +140,7 @@ class Level(object):
 
         elif ext.lower() == ".lvl":
             # Load from lvl file
-            with open(filename) as level:
+            with open(paths.getLevelPath(filename)) as level:
                 self.lvlFile = filename
 
                 data = json.load(level)
@@ -149,15 +150,15 @@ class Level(object):
 
                 if 'tileset' in data:
                     ts_file = data['tileset']
-                    if path.exists(ts_file):
-                        self.tileset = AdvancedTileSet(ts_file)
+                    if path.exists(paths.getLevelPath(ts_file)):
+                        self.tileset = AdvancedTileSet(paths.getLevelPath(ts_file))
                     else:
                         raise ValueError("TileSet %s Not Found!" % ts_file)
                 else:
                     raise ValueError("No TileSet Info Found!")
 
-                if path.exists(self.imgFile):
-                    self._worldImg = pg.image.load(self.imgFile)
+                if path.exists(paths.getLevelPath(self.imgFile)):
+                    self._worldImg = pg.image.load(paths.getLevelPath(self.imgFile))
                 else:
                     raise ValueError("World Image %s Not Found!" % self.imgFile)
 
@@ -186,15 +187,15 @@ class Level(object):
 
         filename = filename if filename else self.lvlFile
         print "Level saving to %s" % filename
-        with open(filename, 'w') as level:
+        with open(paths.getLevelPath(filename), 'w') as level:
             data = { 'name': self.name, 
-                     'tileset': self.tileset.filename,
+                     'tileset': path.basename(self.tileset.filename),
                      'worldImage': self.imgFile
                     }
             json.dump(data, level, indent=True)
 
             # Save out world image in case it was edited
-            pg.image.save(self._worldImg, self.imgFile)
+            pg.image.save(self._worldImg, paths.getLevelPath(self.imgFile))
 
             return True
         return False

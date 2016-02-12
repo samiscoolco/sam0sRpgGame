@@ -3,7 +3,7 @@ from gamelib.game import GameState
 from gamelib.primitives import Rectangle,Point
 import pygame
 from pygame.locals import *
-import os
+import paths
 
 
 class MenuState(GameState):
@@ -23,7 +23,7 @@ class MenuState(GameState):
     def initialize(self):
         """Called the first time the game is changed to this state
            during the applications lifecycle."""
-        self.menuimg=pygame.image.load(os.path.join('data','images','menu.png'))
+        self.menuimg=pygame.image.load(paths.getImagePath('menu.png'))
 
     def enter(self):
         print "welcome to the menu"
@@ -74,10 +74,11 @@ class CreditsState(GameState):
 
         self.player = None
         self.button1= Rectangle.fromPoints(Point(520,320),Point(640,345))
+
     def initialize(self):
         """Called the first time the game is changed to this state
            during the applications lifecycle."""
-        self.menuimg=pygame.image.load("os.path.join('data','images','creds.png')")
+        self.menuimg=pygame.image.load(paths.getImagePath('creds.png'))
 
 
     def enter(self):
@@ -129,11 +130,10 @@ class OptionsState(GameState):
     def initialize(self):
         """Called the first time the game is changed to this state
            during the applications lifecycle."""
-        self.menuimg=pygame.image.load(os.path.join('data','images','opts.png'))
+        self.menuimg=pygame.image.load(paths.getImagePath('opts.png'))
 
     def enter(self):
         print "welcome to the options page"
-        pass
 
     def processInput(self):
         mse=Point(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1])

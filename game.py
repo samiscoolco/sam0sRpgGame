@@ -1,18 +1,17 @@
 import pygame,os
 from pygame.locals import *
 from gamelib.game import GameClass, GameState
-from gamelib.primitives import Point,Rectangle
-from gamelib.asset import *
-from testnpc import Companion
-from level import *
+from gamelib.primitives import Point, Rectangle, Entity
+from gamelib.asset import Animator
 import items
+import paths
 
 pygame.font.init()
 FontInv=pygame.font.Font(None,15)
 
 class Hud(Entity):
     def __init__(self,t):
-        self.imagerepo=[pygame.image.load(os.path.join('data','images','apple.png'))]
+        self.imagerepo=[pygame.image.load(paths.getImagePath('apple.png'))]
         Entity.__init__(self)
         self.target = t
         self.targinv=t.inventory

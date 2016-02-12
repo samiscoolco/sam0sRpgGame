@@ -10,6 +10,7 @@ from game import Player,Hud
 from level import Level
 import items
 from testnpc import Companion
+import paths
 
 class WorldState(GameState):
 
@@ -27,7 +28,7 @@ class WorldState(GameState):
            during the applications lifecycle."""
 
         # Load State Assets
-        self.player_anim = AnimationSet("player_14.png", (16, 24))
+        self.player_anim = AnimationSet(paths.getImagePath("player_14.png"), (16, 24))
         self.player_anim.addAnim("walk_down", 0, 3)
         self.player_anim.addAnim("walk_right", 4, 7)
         self.player_anim.addAnim("walk_left", 8, 11)
