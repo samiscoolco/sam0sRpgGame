@@ -109,7 +109,7 @@ class EditorState(GameState):
                 self._handleKeydown(e.key)
             elif e.type == KEYUP:
                 if e.key == K_TAB:
-                    from gamestates import TestState
+                    from states.gamestates import TestState
                     self.gc.changeState(TestState, self.level.lvlFile)
             elif e.type == MOUSEBUTTONDOWN:
                 self._handleClick(e.button, e.pos)

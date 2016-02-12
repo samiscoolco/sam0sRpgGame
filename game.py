@@ -5,7 +5,6 @@ from gamelib.primitives import Point,Rectangle
 from gamelib.asset import *
 from testnpc import Companion
 from level import *
-from gamestates import *
 import items
 
 pygame.font.init()
@@ -184,7 +183,7 @@ def startGame(initial_state, *args, **kargs):
     game.initialize()
 
     # Start first state
-    game.changeState(initial_state)
+    game.changeState(initial_state, *args, **kargs)
 
     # Main Game Loop
     while game.running:
@@ -195,6 +194,7 @@ def startGame(initial_state, *args, **kargs):
 
 
 if __name__ == "__main__":
+    from states.gamestates import MenuState
     startGame(MenuState)
 
 # end main
