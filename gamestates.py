@@ -7,7 +7,7 @@ from pygame.locals import *
 from level import *
 from testnpc import Companion
 from game import Player,Hud
-import items
+import items,os
 
 class TestState(GameState):
 
@@ -113,7 +113,7 @@ class MenuState(GameState):
     def initialize(self):
         """Called the first time the game is changed to this state
            during the applications lifecycle."""
-        self.menuimg=pygame.image.load("images\\menu.png")
+        self.menuimg=pygame.image.load(os.path.join('data','images','menu.png'))
 
 
     def enter(self):
@@ -168,7 +168,7 @@ class CreditsState(GameState):
     def initialize(self):
         """Called the first time the game is changed to this state
            during the applications lifecycle."""
-        self.menuimg=pygame.image.load("images\\creds.png")
+        self.menuimg=pygame.image.load("os.path.join('data','images','creds.png')")
 
 
     def enter(self):
@@ -219,7 +219,7 @@ class OptionsState(GameState):
     def initialize(self):
         """Called the first time the game is changed to this state
            during the applications lifecycle."""
-        self.menuimg=pygame.image.load("images\\opts.png")
+        self.menuimg=pygame.image.load(os.path.join('data','images','opts.png'))
 
 
     def enter(self):

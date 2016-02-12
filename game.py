@@ -12,7 +12,7 @@ FontInv=pygame.font.Font(None,15)
 
 class Hud(Entity):
     def __init__(self,t):
-        self.imagerepo=[pygame.image.load(os.path.join('images','apple.png'))]
+        self.imagerepo=[pygame.image.load(os.path.join('data','images','apple.png'))]
         Entity.__init__(self)
         self.target = t
         self.targinv=t.inventory
