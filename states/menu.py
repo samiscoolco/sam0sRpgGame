@@ -10,12 +10,8 @@ class MenuState(GameState):
 
     def __init__(self):
         GameState.__init__(self)
-        # For reference, actually set during initialize()
-        self.player_anim = None
-        self.world_tiles = None
-        self.world = None
 
-        self.player = None
+        self.resume = False
         self.button1= Rectangle.fromPoints(Point(22,134),Point(104,172))
         self.button2= Rectangle.fromPoints(Point(21,218),Point(156,251))
         self.button3= Rectangle.fromPoints(Point(26,306),Point(146,336))
@@ -25,8 +21,9 @@ class MenuState(GameState):
            during the applications lifecycle."""
         self.menuimg=pygame.image.load(paths.getImagePath('menu.png'))
 
-    def enter(self):
+    def enter(self, resume = False):
         print "welcome to the menu"
+        self.resume = resume
 
     def processInput(self):
         mse=Point(pygame.mouse.get_pos()[0],pygame.mouse.get_pos()[1])
@@ -40,7 +37,7 @@ class MenuState(GameState):
                 if e.button == 1:
                     if self.button1.contains(mse):
                         from states.world import WorldState
-                        self.gc.changeState(WorldState, "r01.lvl")
+                        self.gc.changeState(WorldState, "r01.lvl" if not self.resume else None)
                     if self.button2.contains(mse):
                         self.gc.changeState(OptionsState)
                     if self.button3.contains(mse):
@@ -67,19 +64,12 @@ class CreditsState(GameState):
     def __init__(self):
         GameState.__init__(self)
 
-        # For reference, actually set during initialize()
-        self.player_anim = None
-        self.world_tiles = None
-        self.world = None
-
-        self.player = None
         self.button1= Rectangle.fromPoints(Point(520,320),Point(640,345))
 
     def initialize(self):
         """Called the first time the game is changed to this state
            during the applications lifecycle."""
         self.menuimg=pygame.image.load(paths.getImagePath('creds.png'))
-
 
     def enter(self):
         print "welcome to the credit page"
@@ -119,12 +109,6 @@ class OptionsState(GameState):
     def __init__(self):
         GameState.__init__(self)
 
-        # For reference, actually set during initialize()
-        self.player_anim = None
-        self.world_tiles = None
-        self.world = None
-
-        self.player = None
         self.button1= Rectangle.fromPoints(Point(520,320),Point(640,345))
 
     def initialize(self):

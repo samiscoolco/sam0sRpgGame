@@ -44,8 +44,11 @@ class WorldState(GameState):
 
     def enter(self, level_file):
         """Called every time the game is switched to this state."""
-        if not self.world or self.world.lvlFile != level_file:
-            self.world = Level(self.gc.SCREEN_SIZE, level_file)
+        if level_file:
+            if not self.world or self.world.lvlFile != level_file:
+                self.world = Level(self.gc.SCREEN_SIZE, level_file)
+        else:
+            assert(self.world)
 
     def processInput(self):
         """Called during normal update/render period for this state
@@ -54,6 +57,10 @@ class WorldState(GameState):
         for e in pygame.event.get():
             if e.type == QUIT:
                 self.gc.quit()
+            elif e.type == KEYUP:
+                if e.key == K_ESCAPE:
+                    from states.menu import MenuState
+                    self.gc.changeState(MenuState)
 
     def update(self):
         """Called during normal update/render period for this state
