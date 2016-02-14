@@ -14,15 +14,65 @@ from pygame.locals import *
 from primitives import Rectangle as Rect
 
 
-# Custom Event IDs used when pushing custom USEREVENTS through
-# the pygame events queue instead of direct callback notifications.
+
 class Events:
+    """
+    Custom Event IDs used when pushing custom USEREVENTS through
+    the pygame events queue instead of direct callback notifications.
+    """
+
     BASE = 1234,
     BUTTON_CLICKED = 1235
 #end Event
 
 
-class ColorTheme(object):
+class Theme(object):
+    """
+    Base Theme acting as a Base Class for all other themes.
+    """
+
+    # Various Flags
+    F_NONE = 0
+    F_CENTER_HORZ = 1
+    F_CENTER_VERT = 2
+    F_CENTER_FULL = 3
+    F_PAD_HORZ = 4
+    F_PAD_VERT = 8
+    F_PAD_FULL = 12
+
+    FONT = None # Delay font creation until first text
+    FONT_COLOR = pg.Color(255, 255, 255)
+
+    PADDING = 0 
+
+    def drawFrame(self, surf, rect):
+        raise NotImplemented()
+
+    def drawButton(self, surf, rect, state):
+        raise NotImplemented()
+
+    def drawText(self, surf, rect, text, flags=0):
+        if not self.FONT:
+            self.FONT = pg.font.Font(pg.font.get_default_font(), 12)
+
+        text_surf = self.FONT.render(text, False, self.FONT_COLOR)
+
+        if flags & Theme.F_PAD_FULL:
+            rect = rect.inflate(-self.PADDING if flags & self.F_PAD_HORZ else 0,
+                                -self.PADDING if flags & self.F_PAD_VERT else 0)
+        pos = rect.topleft
+        if flags & Theme.F_CENTER_FULL:
+            pos = (pos[0] + ((rect.width-text_surf.get_width())/2 if flags & self.F_CENTER_HORZ else 0),
+                   pos[1] + ((rect.height-text_surf.get_height())/2 if flags & self.F_CENTER_VERT else 0))
+
+        surf.blit(text_surf, pos)
+        return text_surf.get_width()
+
+#end Theme
+
+
+
+class ColorTheme(Theme):
 
     # Frame Colors
     BG_COLOR = pg.Color(255, 0, 0)
@@ -33,14 +83,7 @@ class ColorTheme(object):
     BEV_SIZES  = ( 1, 2, 4)
     BEV_COLOR = pg.Color(0, 255, 255)
 
-    FONT = None # Delay font creation until first text
-    FONT_COLOR = pg.Color(255, 255, 255)
-
-    # Various Flags
-    F_NONE = 0
-    F_CENTER_HORZ = 1
-    F_CENTER_VERT = 2
-    F_CENTER_FULL = 3
+    PADDING = 4
 
     def drawFrame(self, surf, rect):
         pg.draw.rect(surf, self.BG_COLOR, rect, 0)
@@ -49,21 +92,16 @@ class ColorTheme(object):
         pg.draw.rect(surf, self.BUT_COLORS[state], rect, 0)
         pg.draw.rect(surf, self.BEV_COLOR, rect, self.BEV_SIZES[state])
 
-    def drawText(self, surf, rect, text, flags=0):
-        if not self.FONT:
-            self.FONT = pg.font.Font(pg.font.get_default_font(), 12)
-
-        text_surf = self.FONT.render(text, False, self.FONT_COLOR)
-        pos = rect.topleft
-        if flags:
-            pos = (pos[0] + ((rect.width-text_surf.get_width())/2 if flags & self.F_CENTER_HORZ else 0),
-                   pos[1] + ((rect.height-text_surf.get_height())/2 if flags & self.F_CENTER_VERT else 0))
-        surf.blit(text_surf, pos)
-        return text_surf.get_width()
-
 #end ColorTheme
+
+
 _THEME = ColorTheme()
 
+def setTheme(theme):
+    global _THEME
+    if theme != _THEME:
+        _THEME = theme
+#end setTheme
 
 
 class Frame(object):
@@ -115,7 +153,7 @@ class Text(Frame):
     def __init__(self, bounds, text="", centered = False):
         Frame.__init__(self, bounds)
         self.text = text
-        self.flags = ColorTheme.F_CENTER_FULL if centered else 0
+        self.flags = Theme.F_CENTER_FULL if centered else 0
 
     def render(self, surf):
         _THEME.drawText(surf, self.getRect(), self.text, self.flags)
@@ -141,7 +179,7 @@ class Button(Frame):
 
     def render(self, surf):
         _THEME.drawButton(surf, self.getRect(), self.state)
-        _THEME.drawText(surf, self.getRect(), self.label, ColorTheme.F_CENTER_FULL)
+        _THEME.drawText(surf, self.getRect(), self.label, Theme.F_CENTER_FULL)
 
     def processEvent(self, event):
         # Moving into or out of button
@@ -191,12 +229,12 @@ class CheckBox(Button):
     def render(self, surf):
         rect = self.getRect()
         check_rect = pg.Rect(rect.topleft, (rect.height, rect.height))
-        state = Button.DOWN if self.checked and not self.state == Button.HOVER else self.state
+        state = Button.DOWN if self.checked else self.state
         _THEME.drawButton(surf, check_rect, state)
         if self.checked:
-            _THEME.drawText(surf, check_rect, "X", ColorTheme.F_CENTER_FULL)
+            _THEME.drawText(surf, check_rect, "X", Theme.F_CENTER_FULL)
         rect = pg.Rect(check_rect.topright, (rect.width-check_rect.width, rect.height))
-        _THEME.drawText(surf, rect, self.label, ColorTheme. F_CENTER_VERT)
+        _THEME.drawText(surf, rect, self.label, Theme. F_CENTER_VERT)
 
 #end CheckBox
 
@@ -214,7 +252,7 @@ class EditBox(Frame):
         if self.focused:
             text = self.text[:self.selPos]+"|"+self.text[self.selPos:]
         _THEME.drawButton(surf, self.getRect(), Button.DOWN)
-        _THEME.drawText(surf, self.getRect(), text, ColorTheme.F_CENTER_VERT)
+        _THEME.drawText(surf, self.getRect(), text, Theme.F_CENTER_VERT | Theme.F_PAD_HORZ)
 
     def processEvent(self, event):
         if event.type == MOUSEBUTTONDOWN:
