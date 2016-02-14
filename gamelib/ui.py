@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-ui.py : Basic UI framework.
+ui.py : Basic UI framework
 
 """
 __author__ = "Andrew Peterson (DJKool14)"
@@ -36,6 +36,12 @@ class ColorTheme(object):
     FONT = None # Delay font creation until first text
     FONT_COLOR = pg.Color(255, 255, 255)
 
+    # Various Flags
+    F_NONE = 0
+    F_CENTER_HORZ = 1
+    F_CENTER_VERT = 2
+    F_CENTER_FULL = 3
+
     def drawFrame(self, surf, rect):
         pg.draw.rect(surf, self.BG_COLOR, rect, 0)
 
@@ -43,16 +49,17 @@ class ColorTheme(object):
         pg.draw.rect(surf, self.BUT_COLORS[state], rect, 0)
         pg.draw.rect(surf, self.BEV_COLOR, rect, self.BEV_SIZES[state])
 
-    def drawText(self, surf, rect, text, centered=False):
+    def drawText(self, surf, rect, text, flags=0):
         if not self.FONT:
             self.FONT = pg.font.Font(pg.font.get_default_font(), 12)
 
         text_surf = self.FONT.render(text, False, self.FONT_COLOR)
         pos = rect.topleft
-        if centered:
-            pos = rect.center
-            pos = (pos[0]-text_surf.get_width()/2, pos[1]-text_surf.get_height()/2)
+        if flags:
+            pos = (pos[0] + ((rect.width-text_surf.get_width())/2 if flags & self.F_CENTER_HORZ else 0),
+                   pos[1] + ((rect.height-text_surf.get_height())/2 if flags & self.F_CENTER_VERT else 0))
         surf.blit(text_surf, pos)
+        return text_surf.get_width()
 
 #end ColorTheme
 _THEME = ColorTheme()
@@ -108,10 +115,10 @@ class Text(Frame):
     def __init__(self, bounds, text="", centered = False):
         Frame.__init__(self, bounds)
         self.text = text
-        self.centered = centered
+        self.flags = ColorTheme.F_CENTER_FULL if centered else 0
 
     def render(self, surf):
-        _THEME.drawText(surf, self.getRect(), self.text, self.centered)
+        _THEME.drawText(surf, self.getRect(), self.text, self.flags)
 
     def processEvent(self, event):
         return False
@@ -134,7 +141,7 @@ class Button(Frame):
 
     def render(self, surf):
         _THEME.drawButton(surf, self.getRect(), self.state)
-        _THEME.drawText(surf, self.getRect(), self.label, True)
+        _THEME.drawText(surf, self.getRect(), self.label, ColorTheme.F_CENTER_FULL)
 
     def processEvent(self, event):
         # Moving into or out of button
@@ -142,15 +149,19 @@ class Button(Frame):
             if self.getRect().collidepoint(event.pos):
                 if not self.state == Button.DOWN:
                     self._changeState(Button.HOVER)
+                    return True
             elif not self.state == Button.UP:
                 self._changeState(Button.UP)
         elif self.state == Button.HOVER:
             # If state is already HOVER, always assume mouse is in Rect
             if event.type == MOUSEBUTTONDOWN:
                 self._changeState(Button.DOWN)
+                return True
         elif self.state == Button.DOWN:
             if event.type == MOUSEBUTTONUP:
                 self._changeState(Button.HOVER)
+                return True
+        return False
 
     def _changeState(self, new_state):
         if self.state == new_state:
@@ -169,3 +180,49 @@ class Button(Frame):
             pg.event.post(pg.event.Event(USEREVENT, usercode=Events.BUTTON_CLICKED, button=self))
 
 #end Button
+
+
+
+class EditBox(Frame):
+
+    def __init__(self, bounds, text=""):
+        Frame.__init__(self, bounds)
+        self.text = text
+        self.focused = False
+        self.selPos = 0
+
+    def render(self, surf):
+        text = self.text
+        if self.focused:
+            text = self.text[:self.selPos]+"|"+self.text[self.selPos:]
+        _THEME.drawButton(surf, self.getRect(), Button.DOWN)
+        _THEME.drawText(surf, self.getRect(), text, ColorTheme.F_CENTER_VERT)
+
+    def processEvent(self, event):
+        if event.type == MOUSEBUTTONDOWN:
+            if self.getRect().collidepoint(event.pos):
+                self.focused = True
+                self.selPos = len(self.text)
+            else:
+                self.focused = False
+
+        elif event.type == KEYDOWN:
+            if not self.focused:
+                return False
+
+            if event.key == K_LEFT:
+                self.selPos -= 1 if self.selPos > 0 else 0
+            elif event.key == K_RIGHT:
+                self.selPos += 1 if self.selPos < len(self.text) else 0
+            elif event.key == K_BACKSPACE and self.selPos > 0:
+                self.selPos -= 1
+                self.text = self.text[:self.selPos]+self.text[self.selPos+1:]
+            elif event.unicode:
+                self.text = self.text[:self.selPos]+event.unicode+self.text[self.selPos:]
+                self.selPos += 1
+            return True
+
+    def setFocus(self, focus):
+        self.focused = focus
+
+#end EditBox

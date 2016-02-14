@@ -62,6 +62,7 @@ class MenuState(GameState):
            during the applications lifecycle."""
         self.testFrame = ui.Frame(pygame.Rect(180, 125, 300, 200))
         self.testFrame.addChild(ui.Text(pygame.Rect(0, 0, 300, 25), "Test Frame", True))
+        self.testFrame.addChild(ui.EditBox(pygame.Rect(25, 50, 250, 25), "insert text"))
         self.testFrame.addChild(ui.Button(pygame.Rect(25, 150, 100, 25), "OK", self.buttonNotify))
         self.testFrame.addChild(ui.Button(pygame.Rect(175, 150, 100, 25), "Cancel", self.buttonNotify))
 
