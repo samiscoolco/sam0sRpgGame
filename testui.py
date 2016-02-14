@@ -63,6 +63,7 @@ class MenuState(GameState):
         self.testFrame = ui.Frame(pygame.Rect(180, 125, 300, 200))
         self.testFrame.addChild(ui.Text(pygame.Rect(0, 0, 300, 25), "Test Frame", True))
         self.testFrame.addChild(ui.EditBox(pygame.Rect(25, 50, 250, 25), "insert text"))
+        self.testFrame.addChild(ui.CheckBox(pygame.Rect(25, 100, 100, 25), "Unchecked", self.checked))
         self.testFrame.addChild(ui.Button(pygame.Rect(25, 150, 100, 25), "OK", self.buttonNotify))
         self.testFrame.addChild(ui.Button(pygame.Rect(175, 150, 100, 25), "Cancel", self.buttonNotify))
 
@@ -104,6 +105,13 @@ class MenuState(GameState):
 
     def buttonNotify(self, button):
         print "Callback %s button clicked!" % (button.label)
+
+    def checked(self, checkbox):
+        checkbox.checked = not checkbox.checked
+        if checkbox.checked:
+            checkbox.label = "Checked"
+        else:
+            checkbox.label = "Unchecked"
 
 # end TestState
 

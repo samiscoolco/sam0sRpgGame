@@ -182,6 +182,24 @@ class Button(Frame):
 #end Button
 
 
+class CheckBox(Button):
+
+    def __init__(self, bounds, label, callback=None):
+        Button.__init__(self, bounds, label, callback)
+        self.checked = False
+
+    def render(self, surf):
+        rect = self.getRect()
+        check_rect = pg.Rect(rect.topleft, (rect.height, rect.height))
+        state = Button.DOWN if self.checked and not self.state == Button.HOVER else self.state
+        _THEME.drawButton(surf, check_rect, state)
+        if self.checked:
+            _THEME.drawText(surf, check_rect, "X", ColorTheme.F_CENTER_FULL)
+        rect = pg.Rect(check_rect.topright, (rect.width-check_rect.width, rect.height))
+        _THEME.drawText(surf, rect, self.label, ColorTheme. F_CENTER_VERT)
+
+#end CheckBox
+
 
 class EditBox(Frame):
 
