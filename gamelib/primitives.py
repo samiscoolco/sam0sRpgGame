@@ -21,6 +21,21 @@ class Vector(list):
 
     _ATTR_STRING = "xyz"
 
+    # CLASS METHODS
+    @classmethod
+    def fromString(cls, vstr):
+        if not vstr:
+            return None
+
+        vstr = vstr.strip("[]<>")
+        coords = vstr.split(',')
+        if len(coords) < 2:
+            return None
+
+        coords = [int(x) for x in coords]
+        return Vector(*tuple(coords))
+
+    # INSTANCE METHODS
     def __init__(self, *coords):
         list.__init__(self, list(coords))
 

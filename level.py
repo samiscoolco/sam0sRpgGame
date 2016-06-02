@@ -3,21 +3,20 @@ from os import path
 import json
 
 import pygame as pg
-from gamelib.primitives import Entity
+from gamelib.primitives import Entity, Rectangle, Vector
 from gamelib.asset import TileSet
+from gamelib.spatial import RectTree
 import paths
 
 
-class Tile (Entity):
+class MapObject(Entity):
 
-    def __init__ (self,x,y,color):
-        Entity.__init__(self, x, y)
-        self.color=color
+    def __init__(self, pos, tileidx):
+        Entity.__init__(self, pos)
+        self.tile = tileidx
 
-    def update(self):
-        pg.draw.rect(screen, (self.color), (self.x,self.y,16,16), 0)
+#end MapObject
 
-# end Tile
 
 class AdvancedTileSet(TileSet):
 
@@ -108,6 +107,7 @@ class Level(object):
 
         self.lvlFile = None
         self.imgFile = None
+        self.objectTree = None
 
         if tileset:
             # pygame doesn't allow you to arbitrarily scale surfaces on blit,
@@ -125,6 +125,9 @@ class Level(object):
         # Sanity checks
         if not filename or len(filename) == 0:
             return False
+
+        # World Objects to be loaded from lvl and later constructed into the objectTree
+        objects = []
 
         # Allow from loading from PNG as well as 'lvl' files
         base, ext = path.splitext(filename)
@@ -162,6 +165,12 @@ class Level(object):
                 else:
                     raise ValueError("World Image %s Not Found!" % self.imgFile)
 
+                # Load world objects
+                if 'objects' in data:
+                    jobjects = data['objects']
+                    for obj in jobjects:
+                        objects.append(MapObject(Vector.fromString(obj[0]), obj[1]))
+
         else:
             return False
 
@@ -172,6 +181,13 @@ class Level(object):
                 
         self.size = (self._worldImg.get_width() * Level.TILE_WIDTH,
                      self._worldImg.get_height() * Level.TILE_HEIGHT)
+
+        # Construct object tree
+        self.objectTree = RectTree(Rectangle.fromSides(0, 0, *self.size))
+        for obj in objects:
+            self.objectTree.insert(obj)
+
+
 
         # Generate first area at origin, just in case
         self._currArea = pg.Surface(self.areaSize)
@@ -185,12 +201,17 @@ class Level(object):
         if not self.tileset:
             return False
 
+        objects = []
+        for obj in self.objectTree:
+            objects.append((str(obj.getPosition()), obj.tile))
+
         filename = filename if filename else self.lvlFile
         print "Level saving to %s" % filename
         with open(paths.getLevelPath(filename), 'w') as level:
             data = { 'name': self.name, 
                      'tileset': path.basename(self.tileset.filename),
-                     'worldImage': self.imgFile
+                     'worldImage': self.imgFile,
+                     'objects': objects
                     }
             json.dump(data, level, indent=True)
 
@@ -310,5 +331,11 @@ class Level(object):
                         #t = Tile(i*16,j*16,(239,228,176))
                         #tiles.add(t)
 
-
+        # Render the World objects as well
+        area_rect = Rectangle.fromPointSize(Vector(*pos), *self.areaSize)
+        objs = self.objectTree.getData(area_rect)
+        for o in objs:
+            r = pg.Rect(o.pos[0]-pos[0], o.pos[1]-pos[1], o.tile, o.tile)
+            pg.draw.rect(self._currArea, pg.Color(255, 0, 0), r)
+        print "Rendered %u world objects" % (len(objs))
 # end Level
