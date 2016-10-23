@@ -288,10 +288,14 @@ class Level(object):
         for j in xrange(self.numTiles[1]):
             for i in xrange(self.numTiles[0]):
                 #print str(i)+","+str(j)
-                px = self._worldImg.get_at((world_pos[0] + i, world_pos[1] + j))
                 targetRect = pg.Rect(i*tw,j*th,tw,th)
+                pg.draw.rect(self._currArea, (128, 128, 128), targetRect, 1)
+                try:
+                    px = self._worldImg.get_at((world_pos[0] + i, world_pos[1] + j))
+                except IndexError:
+                    continue
+
                 if self.tileset:
-                    pg.draw.rect(self._currArea, (128, 128, 128), targetRect, 1)
                     if px[2] == 176:
                         self.tileset.render(self._currArea, targetRect, 18)
                     else:
